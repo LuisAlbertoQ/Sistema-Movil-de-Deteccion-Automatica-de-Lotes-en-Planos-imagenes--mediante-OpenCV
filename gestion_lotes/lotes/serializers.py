@@ -13,7 +13,7 @@ class LoginSerializer(serializers.Serializer):
 class PlanoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plano
-        fields = ['nombre_plano', 'archivo_plano', 'subido_por']  # Incluye el campo subido_por si lo necesitas
+        fields = ['id', 'imagen', 'subido_por', 'fecha_subida']  # Incluye el campo subido_por
         
 class LoteSerializer(serializers.ModelSerializer):
     class Meta:

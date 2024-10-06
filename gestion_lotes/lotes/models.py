@@ -45,8 +45,8 @@ class Usuario(AbstractBaseUser):
         return self.username
 
 class Plano(models.Model):
-    nombre_plano = models.CharField(max_length=100)
-    archivo_plano = models.FileField(upload_to='planos/')
+    #nombre_plano = models.CharField(max_length=100)
+    imagen = models.ImageField(upload_to='planos/')
     subido_por = models.ForeignKey('Usuario', on_delete=models.CASCADE)
     fecha_subida = models.DateTimeField(auto_now_add=True)
 
@@ -62,6 +62,9 @@ class Lote(models.Model):
     coordenadas = models.TextField()  # Almacena las coordenadas del lote
     estado = models.CharField(max_length=10, choices=ESTADO_LOTE, default='disponible')
     precio = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Lote {self.id} - Estado: {self.estado}"
 
 class Venta(models.Model):
     id_lote = models.ForeignKey(Lote, on_delete=models.SET_NULL, null=True)
