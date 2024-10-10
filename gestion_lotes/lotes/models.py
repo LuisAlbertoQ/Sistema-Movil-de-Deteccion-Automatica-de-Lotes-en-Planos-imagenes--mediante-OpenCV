@@ -23,23 +23,23 @@ class UsuarioManager(BaseUserManager):
 class Usuario(AbstractBaseUser):
     ROLES = [
         ('admin', 'Administrador'),
-        ('comprador', 'Comprador')
+        ('agente', 'Agente Inmobiliario'),
+        ('usuario', 'Usuario')
     ]
     
     username = models.CharField(max_length=150, unique=True)
     nombre = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    rol = models.CharField(max_length=10, choices=ROLES, default='comprador')
+    rol = models.CharField(max_length=10, choices=ROLES, default='usuario')
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
-    # Campos requeridos para el sistema de autenticación
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = UsuarioManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']  # Campos requeridos al crear un superusuario
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
         return self.username

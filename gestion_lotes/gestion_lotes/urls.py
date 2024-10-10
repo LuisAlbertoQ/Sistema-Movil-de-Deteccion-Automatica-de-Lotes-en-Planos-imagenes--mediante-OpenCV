@@ -32,7 +32,7 @@ urlpatterns = [
     path('lote/<int:lote_id>/', views.detalle_lote, name='detalle_lote'),
     path('venta/', views.registrar_venta, name='registrar_venta'),
     path('log-actividad/', views.ver_log_actividad, name='ver_log_actividad'),
-    path('agregar-lote/', views.agregar_lote, name='agregar_lote'),
+    #path('agregar-lote/', views.agregar_lote, name='agregar_lote'),
 ]
 
 if settings.DEBUG:

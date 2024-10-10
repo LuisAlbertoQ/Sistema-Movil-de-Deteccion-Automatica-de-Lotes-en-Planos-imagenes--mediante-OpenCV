@@ -5,10 +5,12 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.hashers import make_password
 from .models import LogActividad, Usuario, Lote, Venta, Plano
 from .serializers import LogActividadSerializer, LoteSerializer, PlanoSerializer, UsuarioSerializer, VentaSerializer
+from .permissions import IsAdmin, IsAgenteInmobiliario, IsUsuario
 
 @api_view(['POST'])
 def registro(request):
@@ -16,25 +18,21 @@ def registro(request):
     if 'username' not in data or 'password' not in data:
         return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Cifrar la contraseña
     password_hashed = make_password(data['password'])
     
-    # Crear el usuario
     usuario = Usuario.objects.create(
         username=data['username'],
         nombre=data['nombre'],
         email=data['email'],
         password=password_hashed,
-        rol=data.get('rol', 'comprador')
+        rol=data.get('rol', 'usuario')  # Por defecto, asignamos el rol de usuario
     )
     
-    # Agregar registro al log de actividades
     LogActividad.objects.create(
         id_usuario=usuario,
         accion='Usuario registrado',
     )
     
-    # Serializar el usuario
     serializer = UsuarioSerializer(usuario)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -109,16 +107,14 @@ def detectar_lotes(imagen_path):
     return lotes_detectados
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def subir_plano(request):
     if request.method == 'POST':
         serializer = PlanoSerializer(data=request.data)
         if serializer.is_valid():
             plano = serializer.save(subido_por=request.user)
             
-            # Procesar la imagen para detectar lotes
             lotes = detectar_lotes(plano.imagen.path)
-            
-            # Guardar los lotes en la base de datos
             for lote_data in lotes:
                 Lote.objects.create(
                     id_plano=plano,
@@ -132,6 +128,7 @@ def subir_plano(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+'''
 @api_view(['POST'])
 def agregar_lote(request):
     serializer = LoteSerializer(data=request.data)
@@ -139,10 +136,12 @@ def agregar_lote(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+'''
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])  # Cualquier usuario autenticado puede ver los lotes
 def listar_lotes(request):
-    estado = request.query_params.get('estado', None)  # Permite filtrar por estado
+    estado = request.query_params.get('estado', None)
     if estado:
         lotes = Lote.objects.filter(estado=estado)
     else:
@@ -152,6 +151,7 @@ def listar_lotes(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def detalle_lote(request, lote_id):
     try:
         lote = Lote.objects.get(id=lote_id)
@@ -162,6 +162,7 @@ def detalle_lote(request, lote_id):
     return Response(serializer.data)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAgenteInmobiliario])
 def registrar_venta(request):
     try:
         lote = Lote.objects.get(id=request.data['id_lote'])
@@ -174,7 +175,6 @@ def registrar_venta(request):
             condiciones=request.data.get('condiciones', '')
         )
 
-        # Actualizar estado del lote a vendido
         lote.estado = 'vendido'
         lote.save()
 
@@ -186,6 +186,7 @@ def registrar_venta(request):
         return Response({'error': 'Comprador no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def ver_log_actividad(request):
     log = LogActividad.objects.all()
     serializer = LogActividadSerializer(log, many=True)
