@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.hashers import make_password
 from .models import LogActividad, Usuario, Lote, Venta, Plano
 from .serializers import LogActividadSerializer, LoteSerializer, PlanoSerializer, UsuarioSerializer, VentaSerializer
-from .permissions import IsAdmin, IsAgenteInmobiliario, IsUsuario
+from .permissions import IsAdmin, IsAdminOrAgente, IsUsuario
 
 @api_view(['POST'])
 def registro(request):
@@ -50,7 +50,7 @@ def login(request):
         return Response({'detail': 'No active account found with the given credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 # Función mejorada para detectar los lotes en la imagen
-def detectar_lotes(imagen_path):
+def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
     # Cargar la imagen
     imagen = cv2.imread(imagen_path)
     
@@ -75,6 +75,10 @@ def detectar_lotes(imagen_path):
     lotes_detectados = []
     area_minima = 1000  # Ajusta según el tamaño de tus lotes
     
+    # Obtener dimensiones de la imagen
+    alto, ancho = imagen.shape[:2]
+    area_total_imagen = alto * ancho
+    
     # Procesar cada contorno
     for i, contorno in enumerate(contornos):
         area = cv2.contourArea(contorno)
@@ -89,22 +93,36 @@ def detectar_lotes(imagen_path):
             # Verificar si es un contorno interno válido
             es_valido = True
             if jerarquia is not None:
-                # Verificar la jerarquía del contorno
                 padre = jerarquia[0][i][3]
                 if padre != -1:
-                    # Si tiene un padre, verificar el área relativa
                     area_padre = cv2.contourArea(contornos[padre])
                     if area / area_padre > 0.8:
                         es_valido = False
             
             if es_valido:
+                # Calcular el área relativa del lote respecto al área total de la imagen
+                area_relativa = area / area_total_imagen
+
+                # Estimar área en metros cuadrados (asumiendo que la imagen representa un área de 10000 m2)
+                area_estimada_m2 = area_relativa * 10000  # Ajusta este valor según tus necesidades
+
+                # Calcular el precio basado en el área estimada y factores adicionales
+                precio = area_estimada_m2 * precio_base_por_m2 * factor_ubicacion
+
+                # Determinar la forma del lote
+                forma = "rectangular" if len(approx) == 4 else "irregular"
+
                 lotes_detectados.append({
                     'coordenadas': f"{x},{y},{w},{h}",
                     'estado': 'disponible',
-                    'poligono': approx.tolist()  # Guardar los puntos del polígono si es necesario
+                    'poligono': approx.tolist(),
+                    'area_m2': round(area_estimada_m2, 2),
+                    'forma': forma,
+                    'precio': round(precio, 2)
                 })
     
     return lotes_detectados
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdmin])
@@ -120,7 +138,7 @@ def subir_plano(request):
                     id_plano=plano,
                     coordenadas=lote_data['coordenadas'],
                     estado=lote_data['estado'],
-                    precio=0.0
+                    precio=lote_data['precio']
                 )
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -162,7 +180,7 @@ def detalle_lote(request, lote_id):
     return Response(serializer.data)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAgenteInmobiliario])
+@permission_classes([IsAuthenticated, IsAdminOrAgente])
 def registrar_venta(request):
     try:
         lote = Lote.objects.get(id=request.data['id_lote'])

@@ -7,12 +7,12 @@ class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.rol == 'admin'
 
-class IsAgenteInmobiliario(BasePermission):
+class IsAdminOrAgente(BasePermission):
     """
-    Permiso para verificar si el usuario es agente inmobiliario.
+    Permiso que permite solo a los Administradores o Agentes Inmobiliarios realizar ciertas acciones.
     """
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol == 'agente'
+        return request.user.rol in ['admin', 'agente']
 
 class IsUsuario(BasePermission):
     """
