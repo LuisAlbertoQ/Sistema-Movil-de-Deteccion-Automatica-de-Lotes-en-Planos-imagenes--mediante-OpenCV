@@ -39,15 +39,17 @@ def registro(request):
 
 @api_view(['POST'])
 def login(request):
+    
     username = request.data.get('username')
     password = request.data.get('password')
-
+    
     usuario = authenticate(request, username=username, password=password)
 
     if usuario is not None:
         return Response({'detail': 'Inicio de sesión exitoso', 'username': usuario.username}, status=status.HTTP_200_OK)
     else:
         return Response({'detail': 'No active account found with the given credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    
 
 # Función mejorada para detectar los lotes en la imagen
 def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
@@ -132,6 +134,11 @@ def subir_plano(request):
         if serializer.is_valid():
             plano = serializer.save(subido_por=request.user)
             
+            LogActividad.objects.create(
+            id_usuario=request.user,
+            accion=f'Plano {plano.id} subido'    
+        )
+            
             lotes = detectar_lotes(plano.imagen.path)
             for lote_data in lotes:
                 Lote.objects.create(
@@ -145,6 +152,12 @@ def subir_plano(request):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def listar_planos(request):
+    planos = Plano.objects.all()
+    serializer = PlanoSerializer(planos, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)  # Enviar la respuesta en formato JSON
 
 '''
 @api_view(['POST'])
@@ -168,6 +181,42 @@ def listar_lotes(request):
     serializer = LoteSerializer(lotes, many=True)
     return Response(serializer.data)
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminOrAgente])  # Solo los usuarios con permisos pueden eliminar
+def eliminar_lote(request, lote_id):
+    try:
+        lote = Lote.objects.get(id=lote_id)
+        lote.delete()
+        
+        LogActividad.objects.create(
+            id_usuario=request.user,
+            accion=f'Venta {lote_id} eliminado'    
+        )
+                
+        return Response({'detail': 'Lote eliminado exitosamente'}, status=status.HTTP_204_NO_CONTENT)
+    except Lote.DoesNotExist:
+        return Response({'error': 'Lote no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminOrAgente])  # Permisos necesarios
+def editar_lote(request, lote_id):
+    try:
+        lote = Lote.objects.get(id=lote_id)
+    except Lote.DoesNotExist:
+        return Response({'error': 'Lote no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = LoteSerializer(lote, data=request.data, partial=True)  # partial=True para permitir actualizaciones parciales
+    if serializer.is_valid():
+        serializer.save()
+        
+        LogActividad.objects.create(
+            id_usuario=request.user,
+            accion=f'Lote {lote.id} editado'    
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def detalle_lote(request, lote_id):
@@ -178,6 +227,7 @@ def detalle_lote(request, lote_id):
 
     serializer = LoteSerializer(lote)
     return Response(serializer.data)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdminOrAgente])
@@ -195,6 +245,11 @@ def registrar_venta(request):
 
         lote.estado = 'vendido'
         lote.save()
+        
+        LogActividad.objects.create(
+            id_usuario=request.user,
+            accion=f'Venta {venta.id} registrada'    
+        )
 
         serializer = VentaSerializer(venta)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -202,6 +257,62 @@ def registrar_venta(request):
         return Response({'error': 'Lote no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     except Usuario.DoesNotExist:
         return Response({'error': 'Comprador no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrAgente])
+def listar_ventas(request):
+    # Filtrar por comprador si se proporciona en los parámetros de la consulta
+    id_comprador = request.query_params.get('id_comprador', None)
+    id_lote = request.query_params.get('id_lote', None)
+    
+    # Si se proporciona el comprador, filtrar por el comprador
+    if id_comprador:
+        ventas = Venta.objects.filter(id_comprador=id_comprador)
+    # Si se proporciona el lote, filtrar por el lote
+    elif id_lote:
+        ventas = Venta.objects.filter(id_lote=id_lote)
+    else:
+        ventas = Venta.objects.all()
+    
+    serializer = VentaSerializer(ventas, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def elimnimar_venta(request, venta_id):
+    try:
+        venta = Venta.objects.get(id=venta_id)
+        venta.delete()
+        
+        LogActividad.objects.create(
+            id_usuario=request.user,
+            accion=f'Venta {venta_id} eliminado'    
+        )
+        
+        return Response({'detail:''Venta eliminada exsitosamente'}, status=status.HTTP_204_NO_CONTENT)
+    except Venta.DoesNotExist:
+        return Response({'error': 'Venta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def editar_venta(request, venta_id):
+    try:
+        venta = Venta.objects.get(id=venta_id)
+    except Venta.DoesNotExist:
+        return Response({'error': 'Venta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = VentaSerializer(venta, data=request.data, partial=True)  # partial=True permite actualizar campos específicos
+    if serializer.is_valid():
+        serializer.save()
+        
+        LogActividad.objects.create(
+            id_usuario=request.user,
+            accion=f'Venta {venta_id} editada'    
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdmin])

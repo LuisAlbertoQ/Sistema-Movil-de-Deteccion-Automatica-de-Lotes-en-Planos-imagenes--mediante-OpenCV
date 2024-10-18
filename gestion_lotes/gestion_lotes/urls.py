@@ -32,6 +32,14 @@ urlpatterns = [
     path('lote/<int:lote_id>/', views.detalle_lote, name='detalle_lote'),
     path('venta/', views.registrar_venta, name='registrar_venta'),
     path('log-actividad/', views.ver_log_actividad, name='ver_log_actividad'),
+    path('eliminar-lote/<int:lote_id>', views.eliminar_lote, name='eliminar_lote'),
+    path('eliminar-venta/<int:venta_id>', views.elimnimar_venta, name='eliminar_venta'),
+    path('listar-ventas/', views.listar_ventas, name='listar_ventas'),
+    path('listar-planos/', views.listar_planos, name='listar_planos'),
+    path('editar-lote/<int:lote_id>', views.editar_lote, name='editar_lote'),
+    path('editar-venta/<int:venta_id>', views.editar_venta, name='editar_venta'),
+    
+    
     #path('agregar-lote/', views.agregar_lote, name='agregar_lote'),
 ]
 
