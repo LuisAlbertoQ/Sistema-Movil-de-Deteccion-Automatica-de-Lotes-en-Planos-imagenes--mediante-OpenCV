@@ -114,7 +114,11 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
                 # Determinar la forma del lote
                 forma = "rectangular" if len(approx) == 4 else "irregular"
 
+                # Asignar un nombre al lote (puedes ajustarlo según lo que necesites)
+                nombre_lote = f"Lote {i + 1}"
+
                 lotes_detectados.append({
+                    'nombre': nombre_lote,  # Agregar el nombre del lote
                     'coordenadas': f"{x},{y},{w},{h}",
                     'estado': 'disponible',
                     'poligono': approx.tolist(),
@@ -127,22 +131,27 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAdmin])
+@permission_classes([IsAuthenticated])
 def subir_plano(request):
     if request.method == 'POST':
         serializer = PlanoSerializer(data=request.data)
+        
         if serializer.is_valid():
+            # Guardar el plano con el usuario autenticado
             plano = serializer.save(subido_por=request.user)
             
+            # Registrar la actividad de subida de plano
             LogActividad.objects.create(
-            id_usuario=request.user,
-            accion=f'Plano {plano.id} subido'    
-        )
+                id_usuario=request.user,
+                accion=f'Plano {plano.id} subido'
+            )
             
+            # Llamar a la función de detección de lotes y procesar los lotes detectados
             lotes = detectar_lotes(plano.imagen.path)
             for lote_data in lotes:
                 Lote.objects.create(
                     id_plano=plano,
+                    nombre=lote_data['nombre'],  # Asignar el nombre del lote
                     coordenadas=lote_data['coordenadas'],
                     estado=lote_data['estado'],
                     precio=lote_data['precio']
@@ -168,6 +177,17 @@ def agregar_lote(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 '''
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def obtener_lotes_por_plano(request, plano_id):
+    try:
+        #Filtra los lotes segun el ID del plano
+        lotes = Lote.objects.filter(id_plano=plano_id)
+        serializer = LoteSerializer(lotes, many=True)
+        return Response(serializer.data, status=200)
+    except Lote.DoesNotExist:
+        return Response({'error': 'No se encontraron lotes para este plano'}, status=status.HTTP_404_NOT_FOUND)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])  # Cualquier usuario autenticado puede ver los lotes
@@ -226,7 +246,7 @@ def detalle_lote(request, lote_id):
         return Response({'error': 'Lote no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
     serializer = LoteSerializer(lote)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

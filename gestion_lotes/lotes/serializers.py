@@ -11,9 +11,10 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
 
 class PlanoSerializer(serializers.ModelSerializer):
+    subido_por = serializers.CharField(source='subido_por.nombre', read_only=True)
     class Meta:
         model = Plano
-        fields = ['id', 'imagen', 'subido_por', 'fecha_subida']  # Incluye el campo subido_por
+        fields = ['id', 'nombre_plano','imagen', 'subido_por', 'fecha_subida']  # Incluye el campo subido_por
         
 class LoteSerializer(serializers.ModelSerializer):
     class Meta:

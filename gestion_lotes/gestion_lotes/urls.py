@@ -38,10 +38,9 @@ urlpatterns = [
     path('listar-planos/', views.listar_planos, name='listar_planos'),
     path('editar-lote/<int:lote_id>', views.editar_lote, name='editar_lote'),
     path('editar-venta/<int:venta_id>', views.editar_venta, name='editar_venta'),
+    path('obtener-lotes/<int:plano_id>/', views.obtener_lotes_por_plano, name='obtener_lotes_por_plano'),
+    
     
     
     #path('agregar-lote/', views.agregar_lote, name='agregar_lote'),
-]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
