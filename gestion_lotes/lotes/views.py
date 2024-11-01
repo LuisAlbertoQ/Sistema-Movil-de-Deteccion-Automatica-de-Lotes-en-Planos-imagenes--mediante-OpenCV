@@ -94,12 +94,28 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
             
             # Verificar si es un contorno interno válido
             es_valido = True
+            
+            # Verificar si el contorno es el borde de la imagen
+            if (x <= 1 and y <= 1) or (x + w >= ancho - 1) or (y + h >= alto - 1):
+                es_valido = False
+            
+            # Verificar si el área es demasiado grande (más del 50% del área total)
+            if area > (area_total_imagen * 0.5):
+                es_valido = False
+                
+            # Verificar jerarquía
             if jerarquia is not None:
+                # Verificar si tiene padre
                 padre = jerarquia[0][i][3]
                 if padre != -1:
                     area_padre = cv2.contourArea(contornos[padre])
                     if area / area_padre > 0.8:
                         es_valido = False
+                        
+                # Verificar si tiene hijos (si tiene hijos, probablemente es un contorno exterior)
+                hijo = jerarquia[0][i][2]
+                if hijo != -1:
+                    es_valido = False
             
             if es_valido:
                 # Calcular el área relativa del lote respecto al área total de la imagen
@@ -114,11 +130,11 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
                 # Determinar la forma del lote
                 forma = "rectangular" if len(approx) == 4 else "irregular"
 
-                # Asignar un nombre al lote (puedes ajustarlo según lo que necesites)
-                nombre_lote = f"Lote {i + 1}"
+                # Asignar un nombre al lote
+                nombre_lote = f"Lote {len(lotes_detectados) + 1}"
 
                 lotes_detectados.append({
-                    'nombre': nombre_lote,  # Agregar el nombre del lote
+                    'nombre': nombre_lote,
                     'coordenadas': f"{x},{y},{w},{h}",
                     'estado': 'disponible',
                     'poligono': approx.tolist(),
