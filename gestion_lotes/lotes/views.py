@@ -51,6 +51,16 @@ def login(request):
         return Response({'detail': 'No active account found with the given credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def obtener_perfil_usuario(request):
+    usuario = request.user
+    data = {
+        "username": usuario.username,
+        "email": usuario.email
+    }
+    return Response(data)
+
 # Función mejorada para detectar los lotes en la imagen
 def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
     # Cargar la imagen
@@ -59,7 +69,7 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
     # Convertir la imagen a escala de grises
     gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
     
-    # Aplicar suavizado para reducir ruido
+    # Aplicar suavizado para reducir
     gris = cv2.GaussianBlur(gris, (5, 5), 0)
     
     # Aplicar un umbral adaptativo para mejorar la segmentación
@@ -147,7 +157,7 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdmin])
 def subir_plano(request):
     if request.method == 'POST':
         serializer = PlanoSerializer(data=request.data)
@@ -170,7 +180,9 @@ def subir_plano(request):
                     nombre=lote_data['nombre'],  # Asignar el nombre del lote
                     coordenadas=lote_data['coordenadas'],
                     estado=lote_data['estado'],
-                    precio=lote_data['precio']
+                    precio=lote_data['precio'],
+                    area_m2=lote_data['area_m2'],
+                    forma=lote_data['forma']
                 )
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
