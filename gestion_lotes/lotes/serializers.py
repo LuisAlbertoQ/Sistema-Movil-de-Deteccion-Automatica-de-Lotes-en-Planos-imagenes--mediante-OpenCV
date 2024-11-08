@@ -6,6 +6,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ['id', 'username', 'nombre', 'email', 'rol', 'fecha_registro']
         
+class CompradoresSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ['id', 'nombre', 'email']
+        
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
@@ -22,6 +27,8 @@ class LoteSerializer(serializers.ModelSerializer):
         fields = '__all__'  # Esto incluirá todos los campos del modelo Lote
         
 class VentaSerializer(serializers.ModelSerializer):
+    id_comprador = serializers.CharField(source='id_comprador.nombre', read_only=True)
+    id_lote = serializers.CharField(source='id_lote.nombre', read_only=True)
     class Meta:
         model = Venta
         fields = ['id', 'id_lote', 'id_comprador', 'precio_venta', 'fecha_venta', 'condiciones']

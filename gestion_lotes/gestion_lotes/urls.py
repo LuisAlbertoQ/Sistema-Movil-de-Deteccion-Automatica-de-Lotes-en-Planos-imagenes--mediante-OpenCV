@@ -20,11 +20,12 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 from lotes import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('registro/', views.registro, name='registro'),
     path('subir-plano/', views.subir_plano, name='subir_plano'),
@@ -40,6 +41,7 @@ urlpatterns = [
     path('editar-venta/<int:venta_id>', views.editar_venta, name='editar_venta'),
     path('obtener-lotes/<int:plano_id>/', views.obtener_lotes_por_plano, name='obtener_lotes_por_plano'),
     path('obtener-perfil/', views.obtener_perfil_usuario, name='obtener_perfil_usuario'),
+    path('compradores/', views.listar_compradores, name='listar_compradores'),
     
     
     

@@ -3,13 +3,16 @@ import cv2
 import numpy as np
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.hashers import make_password
 from .models import LogActividad, Usuario, Lote, Venta, Plano
-from .serializers import LogActividadSerializer, LoteSerializer, PlanoSerializer, UsuarioSerializer, VentaSerializer
+from .serializers import LogActividadSerializer, LoteSerializer, PlanoSerializer, UsuarioSerializer, VentaSerializer, CompradoresSerializer
 from .permissions import IsAdmin, IsAdminOrAgente, IsUsuario
 
 @api_view(['POST'])
@@ -37,19 +40,43 @@ def registro(request):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # Agregar datos personalizados a la respuesta
+        data['username'] = self.user.username
+        data['rol'] = self.user.rol
+        data['email'] = self.user.email
+        data['id'] = self.user.id
+        return data
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
 @api_view(['POST'])
 def login(request):
-    
     username = request.data.get('username')
     password = request.data.get('password')
     
     usuario = authenticate(request, username=username, password=password)
 
     if usuario is not None:
-        return Response({'detail': 'Inicio de sesión exitoso', 'username': usuario.username}, status=status.HTTP_200_OK)
+        # Usar el serializador personalizado
+        serializer = CustomTokenObtainPairSerializer()
+        refresh = RefreshToken.for_user(usuario)
+        
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'username': usuario.username,
+            'rol': usuario.rol,
+            'email': usuario.email,
+            'id': usuario.id
+        }, status=status.HTTP_200_OK)
     else:
-        return Response({'detail': 'No active account found with the given credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-    
+        return Response({
+            'detail': 'No active account found with the given credentials'
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -57,7 +84,8 @@ def obtener_perfil_usuario(request):
     usuario = request.user
     data = {
         "username": usuario.username,
-        "email": usuario.email
+        "email": usuario.email,
+        "rol": usuario.rol
     }
     return Response(data)
 
@@ -360,6 +388,13 @@ def editar_venta(request, venta_id):
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def listar_compradores(request):
+    compradores = Usuario.objects.filter(rol='Usuario')
+    serializer = CompradoresSerializer(compradores, many=True)
+    return Response(serializer.data)
 
 
 @api_view(['GET'])
