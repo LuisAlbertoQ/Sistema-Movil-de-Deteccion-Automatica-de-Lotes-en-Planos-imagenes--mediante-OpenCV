@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_lotes_frontend/ventas/editar_venta_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -59,6 +60,24 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
     });
   }
 
+  void _editarVenta(Map<String, dynamic> venta) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditarVentaScreen(
+          ventaId: venta['id'],
+          precio: double.parse(venta['precio_venta'].toString()),
+          condiciones: venta['condiciones'],
+          token: widget.token,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      fetchVentas();
+    }
+  }
+
   Widget _buildVentaItem(Map<String, dynamic> venta) {
     return Card(
       elevation: 3,
@@ -97,6 +116,14 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              onPressed: () => _editarVenta(venta),
+              style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                padding: const EdgeInsets.all(8),
               ),
             ),
           ],

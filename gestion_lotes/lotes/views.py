@@ -356,19 +356,27 @@ def listar_ventas(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdmin])
-def elimnimar_venta(request, venta_id):
+def eliminar_venta(request, venta_id):
     try:
         venta = Venta.objects.get(id=venta_id)
+        lote = venta.id_lote
         venta.delete()
+        
+        lote.estado = 'disponible'
+        lote.save()
         
         LogActividad.objects.create(
             id_usuario=request.user,
-            accion=f'Venta {venta_id} eliminado'    
+            accion=f'Venta {venta_id} eliminada y lote {lote.id} marcado como disponible'    
         )
         
-        return Response({'detail:''Venta eliminada exsitosamente'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'detail:''Venta eliminada exitosamente'}, status=status.HTTP_204_NO_CONTENT)
     except Venta.DoesNotExist:
         return Response({'error': 'Venta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'Error al procesar la solicitud: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated, IsAdmin])
