@@ -256,6 +256,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
 
   void _mostrarDetallesLote(BuildContext context, Map<String, dynamic> lote) {
     showModalBottomSheet(
+      backgroundColor: Colors.lightBlue.shade100,
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
@@ -271,7 +272,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 16,),
                 _buildDetalleItem('ID', lote['id']?.toString() ?? 'No disponible'),
                 _buildDetalleItem('Nombre', lote['nombre'] ?? 'No disponible'),
                 _buildDetalleItem('Estado', lote['estado'] ?? 'No disponible'),
@@ -279,6 +280,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                 _buildDetalleItem('Área', '${lote['area_m2'] ?? 'No disponible'} m²'),
                 _buildDetalleItem('Forma', lote['forma'] ?? 'No disponible'),
               ],
+
             ),
             Positioned(
               right: 16,
@@ -305,8 +307,11 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                         _obtenerLotes();
                       });
                     },
-                    backgroundColor: Colors.green,
-                    child: const Icon(Icons.attach_money),
+                    backgroundColor: Colors.green.shade50,
+                    child: Icon(
+                        Icons.attach_money,
+                        color: Colors.green.shade800,
+                    ),
                   ),
                   const SizedBox(height: 16), // Espacio entre botones
                   // Botón de Editar
@@ -326,7 +331,10 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                         _obtenerLotes();
                       });
                     },
-                    child: const Icon(Icons.edit),
+                    backgroundColor: Colors.blue.shade50,
+                    child: Icon(
+                        Icons.edit,
+                        color: Colors.blue.shade800),
                   ),
                 ],
               ),
@@ -364,6 +372,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _obtenerLotes,
+            color: Colors.blue,
           ),
         ],
       ),

@@ -5,6 +5,7 @@ import 'dart:convert';
 
 class ListarVentasScreen extends StatefulWidget {
   final String token;
+
   const ListarVentasScreen({Key? key, required this.token}) : super(key: key);
 
   @override
@@ -55,7 +56,8 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
       filteredVentas = ventas.where((venta) {
         final compradorId = venta['id_comprador'].toString().toLowerCase();
         final loteId = venta['id_lote'].toString().toLowerCase();
-        return compradorId.contains(searchQuery) || loteId.contains(searchQuery);
+        return compradorId.contains(searchQuery) ||
+            loteId.contains(searchQuery);
       }).toList();
     });
   }
@@ -80,6 +82,7 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
 
   Widget _buildVentaItem(Map<String, dynamic> venta) {
     return Card(
+      color: Colors.lightBlue.shade50,
       elevation: 3,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ExpansionTile(
@@ -88,12 +91,12 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: Colors.blue.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.receipt_long,
-                color: Theme.of(context).primaryColor,
+                color: Colors.blue,
               ),
             ),
             const SizedBox(width: 16),
@@ -120,9 +123,10 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
             ),
             IconButton(
               icon: const Icon(Icons.edit, size: 20),
+              color: Colors.blue,
               onPressed: () => _editarVenta(venta),
               style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                backgroundColor: Colors.blue.withOpacity(0.1),
                 padding: const EdgeInsets.all(8),
               ),
             ),
@@ -136,7 +140,7 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
               children: [
                 _buildInfoRow(
                   Icons.person,
-                  'Comprador ID',
+                  'Comprador',
                   venta['id_comprador'].toString(),
                 ),
                 const SizedBox(height: 8),
@@ -174,7 +178,9 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 14),
+            style: const TextStyle(
+              fontSize: 14,
+            ),
           ),
         ),
       ],
@@ -188,78 +194,121 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
         elevation: 0,
         title: const Text(
           'Lista de Ventas',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: Colors.blue.shade600),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).primaryColor.withOpacity(0.05),
-              Colors.white,
-            ],
-          ),
-        ),
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  labelText: 'Buscar por ID de Comprador o Lote',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: const Icon(Icons.filter_list),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onChanged: _filterVentas,
+      body: Stack(
+        children: [
+          // Fondo con patrón de gradiente
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.blue.shade50,
+                  Colors.white,
+                  Colors.blue.shade50,
+                ],
               ),
             ),
-            Expanded(
-              child: filteredVentas.isEmpty
-                  ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.search_off,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No hay ventas que coincidan\ncon la búsqueda',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 16,
+          ),
+          // Círculos decorativos
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue.withOpacity(0.1),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue.withOpacity(0.05),
+              ),
+            ),
+          ),
+          // Contenido principal
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    cursorColor: Colors.black,
+                    decoration: InputDecoration(
+                      labelText: 'Buscar por ID de Comprador o Lote',
+                      labelStyle: const TextStyle(
+                        color: Colors.black,
+                      ),
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: const Icon(Icons.filter_list),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
                     ),
-                  ],
+                    onChanged: _filterVentas,
+                  ),
                 ),
-              )
-                  : ListView.builder(
-                padding: const EdgeInsets.only(bottom: 16),
-                itemCount: filteredVentas.length,
-                itemBuilder: (context, index) {
-                  return _buildVentaItem(filteredVentas[index]);
-                },
-              ),
+                Expanded(
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : filteredVentas.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No hay ventas que coincidan\ncon la búsqueda',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              itemCount: filteredVentas.length,
+                              itemBuilder: (context, index) {
+                                return _buildVentaItem(filteredVentas[index]);
+                              },
+                            ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

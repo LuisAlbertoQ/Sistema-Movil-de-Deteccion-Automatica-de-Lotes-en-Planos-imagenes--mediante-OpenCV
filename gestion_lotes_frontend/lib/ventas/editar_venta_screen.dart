@@ -55,7 +55,7 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
     });
 
     if (response.statusCode == 200) {
-      Navigator.pop(context, true); // Vuelve a la lista de ventas y actualiza
+      Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Venta actualizada correctamente')),
       );
@@ -67,7 +67,6 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
   }
 
   Future<void> eliminarVenta() async {
-    // Mostrar diálogo de confirmación
     bool confirmar = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -112,7 +111,6 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
       });
 
       if (response.statusCode == 204) {
-        // Si la eliminación fue exitosa, volver a la pantalla anterior
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -145,7 +143,16 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar Venta'),
+        elevation: 0,
+        title: const Text(
+          'Editar Venta',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: Colors.blue.shade600),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete),
@@ -154,29 +161,146 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _precioController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Precio de Venta'),
+      body: Stack(
+        children: [
+          // Fondo con patrón de gradiente
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.blue.shade50,
+                  Colors.white,
+                  Colors.blue.shade50,
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _condicionesController,
-              decoration: const InputDecoration(labelText: 'Condiciones'),
+          ),
+          // Círculos decorativos
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue.withOpacity(0.1),
+              ),
             ),
-            const SizedBox(height: 32),
-            isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-              onPressed: actualizarVenta,
-              child: const Text('Guardar Cambios'),
+          ),
+          Positioned(
+            bottom: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue.withOpacity(0.05),
+              ),
             ),
-          ],
-        ),
+          ),
+          // Contenido principal
+          Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.85,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.1),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Editar Detalles de Venta',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        cursorColor: Colors.black,
+                        controller: _precioController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          labelText: 'Precio de Venta',
+                          labelStyle: const TextStyle(
+                            color: Colors.blue
+                          ),
+                          prefixIcon: Icon(Icons.attach_money, color: Colors.blue.shade600),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        cursorColor: Colors.black,
+                        controller: _condicionesController,
+                        decoration: InputDecoration(
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          labelText: 'Condiciones',
+                          labelStyle: const TextStyle(
+                              color: Colors.blue
+                          ),
+                          prefixIcon: Icon(Icons.description, color: Colors.blue.shade600),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                        onPressed: actualizarVenta,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Guardar Cambios',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

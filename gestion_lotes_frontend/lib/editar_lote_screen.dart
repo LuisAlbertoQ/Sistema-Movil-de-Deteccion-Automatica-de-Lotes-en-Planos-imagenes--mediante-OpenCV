@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class EditarLoteScreen extends StatefulWidget {
-  final int loteId;  // Recibe el ID del lote desde la pantalla anterior
-  final String token; // Token para la autenticación
+  final int loteId;
+  final String token;
 
   EditarLoteScreen({required this.loteId, required this.token});
 
@@ -23,7 +23,7 @@ class _EditarLoteScreenState extends State<EditarLoteScreen> {
   // Método para cargar datos del lote
   Future<void> cargarDatosLote() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/lote/${widget.loteId}'), // Cambia a 'detalle-lote'
+      Uri.parse('http://10.0.2.2:8000/lote/${widget.loteId}'),
       headers: {'Authorization': 'Bearer ${widget.token}'},
     );
 
@@ -38,7 +38,6 @@ class _EditarLoteScreenState extends State<EditarLoteScreen> {
       // Manejo del error si no se pudo obtener el detalle del lote
     }
   }
-
 
   // Método para actualizar datos del lote
   Future<void> actualizarLote() async {
@@ -71,34 +70,157 @@ class _EditarLoteScreenState extends State<EditarLoteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Editar Lote')),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              TextFormField(
-                controller: nombreController,
-                decoration: InputDecoration(labelText: 'Nombre'),
+      appBar: AppBar(
+        title: const Text('Editar Lote'),
+        backgroundColor: Colors.white,
+      ),
+      body: Stack(
+        children: [
+          // Fondo con patrón de gradiente
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.blue.shade50,
+                  Colors.white,
+                  Colors.blue.shade50,
+                ],
               ),
-              TextFormField(
-                controller: estadoController,
-                decoration: InputDecoration(labelText: 'Estado'),
-              ),
-              TextFormField(
-                controller: precioController,
-                decoration: InputDecoration(labelText: 'Precio'),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: actualizarLote,
-                child: Text('Guardar Cambios'),
-              ),
-            ],
+            ),
           ),
-        ),
+          // Círculos decorativos
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue.withOpacity(0.1),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue.withOpacity(0.05),
+              ),
+            ),
+          ),
+          // Contenido principal
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 30.0, vertical: 20.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Título
+                      const Text(
+                        'Editar Lote',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.2,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Campos de texto
+                      Column(
+                        children: [
+                          TextField(
+                            cursorColor: Colors.black,
+                            controller: nombreController,
+                            decoration: InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              labelText: 'Nombre',
+                              labelStyle: TextStyle(color: Colors.black),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16), // Espacio entre campos
+                          TextFormField(
+                            cursorColor: Colors.black,
+                            controller: estadoController,
+                            decoration: InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              labelText: 'Estado',
+                              labelStyle: TextStyle(color: Colors.black),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            cursorColor: Colors.black,
+                            controller: precioController,
+                            decoration: InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              labelText: 'Precio',
+                              labelStyle: TextStyle(color: Colors.black),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                              ),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                      // Botón para guardar cambios
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 16),
+                          elevation: 3,
+                        ),
+                        onPressed: actualizarLote,
+                        child: const Text(
+                          'Guardar Cambios',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

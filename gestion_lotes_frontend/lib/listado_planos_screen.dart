@@ -17,11 +17,13 @@ class ListadoPlanosScreen extends StatefulWidget {
   _ListadoPlanosScreenState createState() => _ListadoPlanosScreenState();
 }
 
-class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
+class _ListadoPlanosScreenState extends State<ListadoPlanosScreen>
+    with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> planos = [];
   bool isLoading = true;
   String? error;
   final ScrollController _scrollController = ScrollController();
+  late AnimationController _animationController;
 
   static const String baseUrl = 'http://10.0.2.2:8000';
   static const String planosEndpoint = '/listar-planos/';
@@ -29,12 +31,17 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
     obtenerPlanos();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -73,6 +80,7 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
           planos = data.map((plano) => plano as Map<String, dynamic>).toList();
           isLoading = false;
         });
+        _animationController.forward();
       } else if (response.statusCode == 401) {
         throw Exception('Sesión expirada. Por favor, vuelva a iniciar sesión.');
       } else {
@@ -92,7 +100,10 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
       SnackBar(
         content: Text(
           mensaje.replaceAll('Exception:', ''),
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         backgroundColor: Colors.red[700],
         behavior: SnackBarBehavior.floating,
@@ -108,140 +119,182 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
     );
   }
 
-  Widget _buildPlanoCard(Map<String, dynamic> plano) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+  Widget _buildPlanoCard(Map<String, dynamic> plano, int index) {
+    final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(
+          (index / planos.length) * 0.5,
+          ((index + 1) / planos.length) * 0.5,
+          curve: Curves.easeOut,
         ),
-        child: InkWell(
-          onTap: () => _navegarAImagenCompleta(plano),
-          borderRadius: BorderRadius.circular(15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: Stack(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: CachedNetworkImage(
-                        imageUrl: '$baseUrl${plano['imagen']}',
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[200],
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.error_outline, size: 40, color: Colors.grey),
-                              SizedBox(height: 8),
-                              Text(
-                                'Error al cargar la imagen',
-                                style: TextStyle(color: Colors.grey),
+      ),
+    );
+
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.5, 0),
+          end: Offset.zero,
+        ).animate(animation),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Card(
+            color: Colors.lightBlue.shade100,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: InkWell(
+              onTap: () => _navegarAImagenCompleta(plano),
+              borderRadius: BorderRadius.circular(15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    child: Stack(
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: CachedNetworkImage(
+                            imageUrl: '$baseUrl${plano['imagen']}',
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[100],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
                               ),
-                            ],
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[100],
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    size: 40,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Error al cargar la imagen',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(20),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.7),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.remove_red_eye,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Ver',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plano['nombre_plano'] ?? 'Sin nombre',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
                           children: [
-                            const Icon(
-                              Icons.remove_red_eye,
-                              color: Colors.white,
+                            Icon(
+                              Icons.person_outline,
                               size: 16,
+                              color: Colors.blue.shade600,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Ver',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
+                              plano['subido_por'] ?? 'Desconocido',
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      plano['nombre_plano'] ?? 'Sin nombre',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.person_outline, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          plano['subido_por'] ?? 'Desconocido',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 16,
+                              color: Colors.blue.shade600,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              plano['fecha_subida'] != null
+                                  ? formatearFecha(plano['fecha_subida'])
+                                  : 'No disponible',
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.access_time, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          plano['fecha_subida'] != null
-                              ? formatearFecha(plano['fecha_subida'])
-                              : 'No disponible',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -267,24 +320,39 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
+        backgroundColor: Colors.white,
         title: const Text(
           'Planos',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            letterSpacing: 0.5,
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SubirPlanoScreen(token: widget.token),
-                ),
-              );
-              if (result == true) {
-                obtenerPlanos();
-              }
-            },
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.add_circle_outline,
+                color: Colors.blue.shade700,
+              ),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SubirPlanoScreen(token: widget.token),
+                  ),
+                );
+                if (result == true) {
+                  obtenerPlanos();
+                }
+              },
+            ),
           ),
         ],
       ),
@@ -293,24 +361,43 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
         onLogout: () {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => MyApp()),
+            MaterialPageRoute(builder: (context) => const MyApp()),
           );
         },
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              Theme.of(context).primaryColor.withOpacity(0.05),
+              Colors.blue.shade50,
               Colors.white,
+              Colors.blue.shade50,
             ],
           ),
         ),
         child: isLoading
-            ? const Center(
-          child: CircularProgressIndicator(),
+            ? Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Colors.blue.shade600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Cargando planos...',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         )
             : planos.isEmpty
             ? Center(
@@ -319,24 +406,25 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
             children: [
               Icon(
                 Icons.image_not_supported_outlined,
-                size: 64,
-                color: Colors.grey[400],
+                size: 80,
+                color: Colors.blue.shade200,
               ),
               const SizedBox(height: 16),
               Text(
                 'No hay planos disponibles',
                 style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Agrega un nuevo plano usando el botón +',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[500],
+                  fontSize: 16,
+                  color: Colors.grey[600],
                 ),
               ),
             ],
@@ -344,13 +432,14 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen> {
         )
             : RefreshIndicator(
           onRefresh: obtenerPlanos,
+          color: Colors.blue.shade600,
           child: ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.only(top: 8, bottom: 16),
             itemCount: planos.length,
             itemBuilder: (context, index) {
               final plano = planos[index];
-              return _buildPlanoCard(plano);
+              return _buildPlanoCard(plano, index);
             },
           ),
         ),
