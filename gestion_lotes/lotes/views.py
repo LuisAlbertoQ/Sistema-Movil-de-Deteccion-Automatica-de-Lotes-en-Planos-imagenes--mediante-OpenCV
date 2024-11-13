@@ -14,6 +14,7 @@ from django.contrib.auth.hashers import make_password
 from .models import LogActividad, Usuario, Lote, Venta, Plano
 from .serializers import LogActividadSerializer, LoteSerializer, PlanoSerializer, UsuarioSerializer, VentaSerializer, CompradoresSerializer
 from .permissions import IsAdmin, IsAdminOrAgente, IsUsuario
+from shapely.geometry import Polygon, MultiPolygon
 
 @api_view(['POST'])
 def registro(request):
@@ -89,15 +90,15 @@ def obtener_perfil_usuario(request):
     }
     return Response(data)
 
-# Función mejorada para detectar los lotes en la imagen
-def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
+# Función detectar los lotes en la imagen
+def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9, area_minima=500, area_maxima=0.5):
     # Cargar la imagen
     imagen = cv2.imread(imagen_path)
     
     # Convertir la imagen a escala de grises
     gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
     
-    # Aplicar suavizado para reducir
+    # Aplicar suavizado para reducir el ruido
     gris = cv2.GaussianBlur(gris, (5, 5), 0)
     
     # Aplicar un umbral adaptativo para mejorar la segmentación
@@ -113,7 +114,6 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
     contornos, jerarquia = cv2.findContours(umbral, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
     lotes_detectados = []
-    area_minima = 1000  # Ajusta según el tamaño de tus lotes
     
     # Obtener dimensiones de la imagen
     alto, ancho = imagen.shape[:2]
@@ -122,7 +122,9 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
     # Procesar cada contorno
     for i, contorno in enumerate(contornos):
         area = cv2.contourArea(contorno)
-        if area > area_minima:
+        
+        # Filtrar contornos por área
+        if area_minima <= area <= area_total_imagen * area_maxima:
             # Aproximar el contorno a un polígono
             epsilon = 0.02 * cv2.arcLength(contorno, True)
             approx = cv2.approxPolyDP(contorno, epsilon, True)
@@ -137,10 +139,6 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
             if (x <= 1 and y <= 1) or (x + w >= ancho - 1) or (y + h >= alto - 1):
                 es_valido = False
             
-            # Verificar si el área es demasiado grande (más del 50% del área total)
-            if area > (area_total_imagen * 0.5):
-                es_valido = False
-                
             # Verificar jerarquía
             if jerarquia is not None:
                 # Verificar si tiene padre
@@ -166,7 +164,14 @@ def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9):
                 precio = area_estimada_m2 * precio_base_por_m2 * factor_ubicacion
 
                 # Determinar la forma del lote
-                forma = "rectangular" if len(approx) == 4 else "irregular"
+                polygon = Polygon(approx.reshape(-1, 2))
+                if polygon.is_valid:
+                    if len(approx) == 4:
+                        forma = "rectangular"
+                    else:
+                        forma = "irregular"
+                else:
+                    forma = "compleja"
 
                 # Asignar un nombre al lote
                 nombre_lote = f"Lote {len(lotes_detectados) + 1}"
@@ -379,7 +384,7 @@ def eliminar_venta(request, venta_id):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated, IsAdmin])
+@permission_classes([IsAuthenticated, IsAdminOrAgente])
 def editar_venta(request, venta_id):
     try:
         venta = Venta.objects.get(id=venta_id)

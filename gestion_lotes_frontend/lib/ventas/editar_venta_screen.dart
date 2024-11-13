@@ -7,6 +7,7 @@ class EditarVentaScreen extends StatefulWidget {
   final int ventaId;
   final double precio;
   final String condiciones;
+  final String rol;
 
   const EditarVentaScreen({
     Key? key,
@@ -14,6 +15,7 @@ class EditarVentaScreen extends StatefulWidget {
     required this.ventaId,
     required this.precio,
     required this.condiciones,
+    required this.rol,
   }) : super(key: key);
 
   @override
@@ -57,11 +59,31 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
     if (response.statusCode == 200) {
       Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Venta actualizada correctamente')),
+        SnackBar(
+          content: const Text(
+            'Venta actualizada correctamente',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al actualizar la venta')),
+        SnackBar(
+          content: const Text(
+            'Error al actualizar la venta',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
       );
     }
   }
@@ -154,6 +176,7 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: Colors.blue.shade600),
         actions: [
+          if (widget.rol == 'admin')
           IconButton(
             icon: const Icon(Icons.delete),
             color: Colors.red,

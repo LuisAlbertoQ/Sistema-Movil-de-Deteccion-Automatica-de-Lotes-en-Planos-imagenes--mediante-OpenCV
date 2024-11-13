@@ -10,6 +10,7 @@ class ImagenCompletaScreen extends StatefulWidget {
   final String nombrePlano;
   final Map<String, dynamic> planoData;
   final String token;
+  final String rol;
 
   const ImagenCompletaScreen({
     Key? key,
@@ -17,6 +18,7 @@ class ImagenCompletaScreen extends StatefulWidget {
     required this.nombrePlano,
     required this.planoData,
     required this.token,
+    required this.rol,
   }) : super(key: key);
 
   @override
@@ -288,7 +290,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Botón de Registrar Venta
+                  if (widget.rol == 'admin' || widget.rol == 'agente')
                   FloatingActionButton(
                     heroTag: 'registrarVenta',
                     onPressed: () {
@@ -298,6 +300,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                         MaterialPageRoute(
                           builder: (context) => RegistrarVentaScreen(
                             token: widget.token,
+                            rol: widget.rol,
                             idLote: lote['id'],
                             precio: lote['precio'],
                             nombreLote: lote['nombre'],
@@ -314,7 +317,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                     ),
                   ),
                   const SizedBox(height: 16), // Espacio entre botones
-                  // Botón de Editar
+                  if (widget.rol == 'admin')
                   FloatingActionButton(
                     heroTag: 'editarLote',
                     onPressed: () {

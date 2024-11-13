@@ -5,8 +5,11 @@ import 'dart:convert';
 
 class ListarVentasScreen extends StatefulWidget {
   final String token;
+  final String rol;
 
-  const ListarVentasScreen({Key? key, required this.token}) : super(key: key);
+  const ListarVentasScreen({Key? key,
+    required this.token,
+    required this.rol}) : super(key: key);
 
   @override
   _ListarVentasScreenState createState() => _ListarVentasScreenState();
@@ -71,6 +74,7 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
           precio: double.parse(venta['precio_venta'].toString()),
           condiciones: venta['condiciones'],
           token: widget.token,
+          rol: widget.rol,
         ),
       ),
     );

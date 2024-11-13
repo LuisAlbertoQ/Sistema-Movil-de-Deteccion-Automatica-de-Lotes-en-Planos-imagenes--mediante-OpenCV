@@ -10,8 +10,9 @@ import 'imagen_completa_screen.dart';
 
 class ListadoPlanosScreen extends StatefulWidget {
   final String token;
+  final String rol;
 
-  const ListadoPlanosScreen({Key? key, required this.token}) : super(key: key);
+  const ListadoPlanosScreen({Key? key, required this.token, required this.rol}) : super(key: key);
 
   @override
   _ListadoPlanosScreenState createState() => _ListadoPlanosScreenState();
@@ -310,6 +311,7 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen>
           nombrePlano: plano['nombre_plano'] ?? 'Plano',
           planoData: plano,
           token: widget.token,
+          rol: widget.rol,
         ),
       ),
     );
@@ -330,6 +332,7 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen>
           ),
         ),
         actions: [
+          if (widget.rol == 'admin')
           Container(
             margin: const EdgeInsets.only(right: 8),
             decoration: BoxDecoration(
@@ -358,6 +361,7 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen>
       ),
       drawer: CustomDrawer(
         token: widget.token,
+        rol: widget.rol,
         onLogout: () {
           Navigator.pushReplacement(
             context,

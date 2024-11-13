@@ -7,6 +7,7 @@ class RegistrarVentaScreen extends StatefulWidget {
   final int idLote;
   final dynamic precio;
   final String nombreLote;
+  final String rol;
 
   const RegistrarVentaScreen({
     Key? key,
@@ -14,6 +15,7 @@ class RegistrarVentaScreen extends StatefulWidget {
     required this.idLote,
     required this.precio,
     required this.nombreLote,
+    required this.rol,
   }) : super(key: key);
 
   @override
@@ -88,7 +90,17 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
 
     if (response.statusCode == 201) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Venta registrada exitosamente')),
+        SnackBar(
+          content: const Text(
+            'Venta registrada exitosamente',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
       );
       Navigator.pop(context);
     } else {

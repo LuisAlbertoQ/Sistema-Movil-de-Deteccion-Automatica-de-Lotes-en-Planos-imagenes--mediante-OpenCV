@@ -5,10 +5,11 @@ import '../main.dart';
 
 class HomeScreen extends StatelessWidget {
   final String token;
+  final String rol;
 
   const HomeScreen({
     Key? key,
-    required this.token,
+    required this.token, required this.rol,
   }) : super(key: key);
 
   @override
@@ -28,6 +29,7 @@ class HomeScreen extends StatelessWidget {
       ),
       drawer: CustomDrawer(
         token: token,
+        rol: rol,
         onLogout: () {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const MainScreen()),

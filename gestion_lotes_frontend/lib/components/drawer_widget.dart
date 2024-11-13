@@ -9,12 +9,14 @@ import '../main.dart';
 
 class CustomDrawer extends StatefulWidget {
   final String token;
+  final String rol;
   final VoidCallback onLogout;
 
   const CustomDrawer({
     Key? key,
     required this.token,
     required this.onLogout,
+    required this.rol,
   }) : super(key: key);
 
   @override
@@ -204,7 +206,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(token: widget.token),
+                      builder: (context) => HomeScreen(token: widget.token, rol: widget.rol,),
                     ),
                   );
                 },
@@ -217,11 +219,12 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ListadoPlanosScreen(token: widget.token),
+                      builder: (context) => ListadoPlanosScreen(token: widget.token, rol: widget.rol,),
                     ),
                   );
                 },
               ),
+              if (widget.rol == 'admin' || widget.rol == 'agente')
               _buildDrawerItem(
                 icon: Icons.attach_money,
                 title: 'Ventas',
@@ -230,7 +233,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ListarVentasScreen(token: widget.token),
+                      builder: (context) => ListarVentasScreen(token: widget.token, rol: widget.rol,),
                     ),
                   );
                 },
@@ -249,7 +252,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      backgroundColor: Colors.white, // Color de fondo del diálogo
+                      backgroundColor: Colors.blue.shade100, // Color de fondo del diálogo
                       title: Text(
                         'Cerrar Sesión',
                         style: TextStyle(
@@ -262,11 +265,17 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                         style: TextStyle(color: Colors.grey.shade600), // Color del contenido
                       ),
                       actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            'Cancelar',
-                            style: TextStyle(color: Colors.grey.shade700),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade400), // Color del borde
+                            borderRadius: BorderRadius.circular(8), // Bordes redondeados
+                          ),
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'Cancelar',
+                              style: TextStyle(color: Colors.grey.shade700),
+                            ),
                           ),
                         ),
                         TextButton(
@@ -275,12 +284,12 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                             widget.onLogout();
                           },
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Espaciado del botón
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Espaciado del botón
                             decoration: BoxDecoration(
                               color: Colors.red.shade400, // Color de fondo del botón
                               borderRadius: BorderRadius.circular(8), // Bordes redondeados
                             ),
-                            child: Text(
+                            child: const Text(
                               'Cerrar Sesión',
                               style: TextStyle(
                                 color: Colors.white,

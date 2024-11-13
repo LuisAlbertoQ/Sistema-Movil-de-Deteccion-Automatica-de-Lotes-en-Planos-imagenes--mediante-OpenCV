@@ -45,36 +45,61 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         barrierDismissible: false,
         builder: (BuildContext context) {
           return Center(
-            child: Container(
-              padding: EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.2),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade700),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Iniciando sesión...',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      color: Colors.blue.shade700, // Color del texto
+            child: Material( //para quitar el borde amarillo
+              type: MaterialType.transparency,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 15,
+                      spreadRadius: 5,
                     ),
-                    textAlign: TextAlign.center, // Centrar el texto
-                  ),
-                ],
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
+                            strokeWidth: 3,
+                          ),
+                        ),
+                        Icon(
+                          Icons.lock_open_rounded,
+                          size: 30,
+                          color: Colors.blue.shade600,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 24),
+                    Text(
+                      'Verificando credenciales',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Por favor espere...',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -97,12 +122,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final token = data['access'];
+        final rol = data['rol'];
 
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                HomeScreen(token: token.toString()),
+                HomeScreen(token: token.toString(),rol: rol.toString(),),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },

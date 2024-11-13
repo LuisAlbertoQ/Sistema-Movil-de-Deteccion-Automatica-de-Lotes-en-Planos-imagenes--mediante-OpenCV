@@ -42,9 +42,4 @@ urlpatterns = [
     path('obtener-lotes/<int:plano_id>/', views.obtener_lotes_por_plano, name='obtener_lotes_por_plano'),
     path('obtener-perfil/', views.obtener_perfil_usuario, name='obtener_perfil_usuario'),
     path('compradores/', views.listar_compradores, name='listar_compradores'),
-    
-    
-    
-    
-    #path('agregar-lote/', views.agregar_lote, name='agregar_lote'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

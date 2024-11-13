@@ -43,6 +43,7 @@ dependencies:
   cached_network_image: ^3.2.0
   photo_view: ^0.14.0
   intl_messages: ^2.3.4
+  flutter_launcher_icons: ^0.13.1
 
 
 dev_dependencies:
@@ -58,6 +59,10 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/imagen/logo_venta.png"
 
 # The following section is specific to Flutter packages.
 flutter:
