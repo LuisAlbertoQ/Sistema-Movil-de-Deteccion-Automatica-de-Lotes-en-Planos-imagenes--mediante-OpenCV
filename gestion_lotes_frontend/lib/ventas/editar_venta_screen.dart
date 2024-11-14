@@ -93,6 +93,7 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.blue.shade50,
           title: const Text('Confirmar eliminación'),
           content: const Text('¿Está seguro que desea eliminar esta venta?'),
           actions: [
@@ -135,9 +136,16 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
       if (response.statusCode == 204) {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Venta eliminada correctamente'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text(
+              'Venta eliminada correctamente',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       } else {

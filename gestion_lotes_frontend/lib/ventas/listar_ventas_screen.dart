@@ -20,11 +20,33 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
   List<dynamic> filteredVentas = [];
   bool isLoading = true;
   String searchQuery = '';
+  String currentSort = 'none';
 
   @override
   void initState() {
     super.initState();
     fetchVentas();
+  }
+
+  void _sortVentas(String sortType) {
+    setState(() {
+      currentSort = sortType;
+      switch (sortType) {
+        case 'recent':
+          filteredVentas.sort((a, b) => b['id'].compareTo(a['id']));
+          break;
+        case 'oldest':
+          filteredVentas.sort((a, b) => a['id'].compareTo(b['id']));
+          break;
+        default:
+          filteredVentas = List.from(ventas.where((venta) {
+            final compradorId = venta['id_comprador'].toString().toLowerCase();
+            final loteId = venta['id_lote'].toString().toLowerCase();
+            return compradorId.contains(searchQuery) ||
+                loteId.contains(searchQuery);
+          }));
+      }
+    });
   }
 
   Future<void> fetchVentas() async {
@@ -62,6 +84,9 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
         return compradorId.contains(searchQuery) ||
             loteId.contains(searchQuery);
       }).toList();
+      if (currentSort != 'none') {
+        _sortVentas(currentSort);
+      }
     });
   }
 
@@ -205,7 +230,6 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
       ),
       body: Stack(
         children: [
-          // Fondo con patrón de gradiente
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -219,7 +243,6 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
               ),
             ),
           ),
-          // Círculos decorativos
           Positioned(
             top: -50,
             right: -50,
@@ -244,7 +267,6 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
               ),
             ),
           ),
-          // Contenido principal
           SafeArea(
             child: Column(
               children: [
@@ -257,8 +279,48 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                       labelStyle: const TextStyle(
                         color: Colors.black,
                       ),
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: const Icon(Icons.filter_list),
+                      prefixIcon: const Icon(Icons.search, color: Colors.blue,),
+                      suffixIcon: PopupMenuButton<String>(
+                        color: Colors.blue.shade50,
+
+                        icon: Icon(
+                          Icons.filter_list,
+                          color: currentSort != 'none' ? Colors.blue : Colors.grey,
+                        ),
+                        onSelected: _sortVentas,
+                        itemBuilder: (BuildContext context) => [
+                          const PopupMenuItem(
+                            value: 'recent',
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_upward, size: 20),
+                                SizedBox(width: 8),
+                                Text('Más reciente'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'oldest',
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_downward, size: 20),
+                                SizedBox(width: 8),
+                                Text('Más antiguo'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'none',
+                            child: Row(
+                              children: [
+                                Icon(Icons.clear_all, size: 20),
+                                SizedBox(width: 8),
+                                Text('Sin filtro'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
@@ -280,34 +342,34 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                   child: isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : filteredVentas.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.search_off,
-                                    size: 64,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No hay ventas que coincidan\ncon la búsqueda',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              itemCount: filteredVentas.length,
-                              itemBuilder: (context, index) {
-                                return _buildVentaItem(filteredVentas[index]);
-                              },
-                            ),
+                      ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No hay ventas que coincidan\ncon la búsqueda',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                      : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    itemCount: filteredVentas.length,
+                    itemBuilder: (context, index) {
+                      return _buildVentaItem(filteredVentas[index]);
+                    },
+                  ),
                 ),
               ],
             ),
