@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-)$@pp4s4^ns1=jotjlbzh6^xnjv=zr-2ugxr9+da@q92d)36ek
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.0.2.2', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['10.0.2.2', 'localhost', '127.0.0.1', '192.168.1.46']
 
 
 # Application definition
@@ -58,9 +58,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'lotes',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,6 +75,11 @@ MIDDLEWARE = [
 AUTH_USER_MODEL = 'lotes.Usuario'
 
 ROOT_URLCONF = 'gestion_lotes.urls'
+
+TIME_ZONE = 'America/Lima'
+USE_TZ = True
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
@@ -131,8 +138,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
 
 USE_I18N = True
 

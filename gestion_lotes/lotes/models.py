@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 class UsuarioManager(BaseUserManager):
@@ -77,9 +78,9 @@ class Venta(models.Model):
     condiciones = models.TextField()
 
 class LogActividad(models.Model):
-    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)  # Cambia 'User' por tu modelo de usuario si es necesario
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     accion = models.CharField(max_length=255)
-    fecha = models.DateTimeField(auto_now_add=True)
+    fecha = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.accion} - {self.fecha} por {self.id_usuario}"

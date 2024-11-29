@@ -60,7 +60,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
     });
 
     try {
-      final String url = 'http://10.0.2.2:8000/obtener-lotes/${widget.planoData['id']}';
+      final String url = 'http://192.168.1.46:8000/obtener-lotes/${widget.planoData['id']}';
 
       final response = await http.get(
         Uri.parse(url),

@@ -19,12 +19,12 @@ class PlanoSerializer(serializers.ModelSerializer):
     subido_por = serializers.CharField(source='subido_por.nombre', read_only=True)
     class Meta:
         model = Plano
-        fields = ['id', 'nombre_plano','imagen', 'subido_por', 'fecha_subida']  # Incluye el campo subido_por
+        fields = ['id', 'nombre_plano','imagen', 'subido_por', 'fecha_subida']
         
 class LoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lote
-        fields = '__all__'  # Esto incluirá todos los campos del modelo Lote
+        fields = '__all__'
         
 class VentaSerializer(serializers.ModelSerializer):
     id_comprador = serializers.CharField(source='id_comprador.nombre', read_only=True)
@@ -34,6 +34,7 @@ class VentaSerializer(serializers.ModelSerializer):
         fields = ['id', 'id_lote', 'id_comprador', 'precio_venta', 'fecha_venta', 'condiciones']
         
 class LogActividadSerializer(serializers.ModelSerializer):
+    id_usuario = serializers.CharField(source='id_usuario.username', read_only=True)
     class Meta:
         model = LogActividad
         fields = ['id_usuario', 'accion', 'fecha']

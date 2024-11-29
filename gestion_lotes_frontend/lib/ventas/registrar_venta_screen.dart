@@ -42,7 +42,7 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
   }
 
   Future<void> _cargarCompradores() async {
-    final url = Uri.parse('http://10.0.2.2:8000/compradores/');
+    final url = Uri.parse('http://192.168.1.46:8000/compradores/');
     final response = await http.get(url, headers: {
       'Authorization': 'Bearer ${widget.token}',
     });
@@ -71,7 +71,7 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
   }
 
   Future<void> registrarVenta() async {
-    final url = Uri.parse('http://10.0.2.2:8000/venta/');
+    final url = Uri.parse('http://192.168.1.46:8000/venta/');
     final body = jsonEncode({
       'id_lote': widget.idLote,
       'id_comprador': compradorSeleccionadoId,

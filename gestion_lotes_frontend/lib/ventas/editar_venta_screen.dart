@@ -39,7 +39,7 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
       isLoading = true;
     });
 
-    final url = Uri.parse('http://10.0.2.2:8000/editar-venta/${widget.ventaId}/');
+    final url = Uri.parse('http://192.168.1.46:8000/editar-venta/${widget.ventaId}/');
     final response = await http.put(
       url,
       headers: {
@@ -119,7 +119,7 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
       isLoading = true;
     });
 
-    final url = Uri.parse('http://10.0.2.2:8000/eliminar-venta/${widget.ventaId}/');
+    final url = Uri.parse('http://192.168.1.46:8000/eliminar-venta/${widget.ventaId}/');
     try {
       final response = await http.delete(
         url,

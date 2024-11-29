@@ -23,7 +23,7 @@ class _EditarLoteScreenState extends State<EditarLoteScreen> {
   // Método para cargar datos del lote
   Future<void> cargarDatosLote() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/lote/${widget.loteId}'),
+      Uri.parse('http://192.168.1.46:8000/lote/${widget.loteId}'),
       headers: {'Authorization': 'Bearer ${widget.token}'},
     );
 
@@ -42,7 +42,7 @@ class _EditarLoteScreenState extends State<EditarLoteScreen> {
   // Método para actualizar datos del lote
   Future<void> actualizarLote() async {
     final response = await http.put(
-      Uri.parse('http://10.0.2.2:8000/editar-lote/${widget.loteId}'),
+      Uri.parse('http://192.168.1.46:8000/editar-lote/${widget.loteId}'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json',

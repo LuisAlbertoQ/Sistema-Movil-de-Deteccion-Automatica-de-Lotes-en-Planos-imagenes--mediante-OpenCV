@@ -31,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/registro/'),
+        Uri.parse('http://192.168.1.46:8000/registro/'),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
           'username': usernameController.text.trim(),
@@ -225,7 +225,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               elevation: 3,
                             ),
                             child: _isLoading
-                                ? SizedBox(
+                                ? const SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
@@ -233,7 +233,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 strokeWidth: 2,
                               ),
                             )
-                                : Text(
+                                : const Text(
                               'Registrarse',
                               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                             ),

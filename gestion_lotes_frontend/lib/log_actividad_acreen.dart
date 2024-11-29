@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:gestion_lotes_frontend/ventas/editar_venta_screen.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
-class ListarVentasScreen extends StatefulWidget {
+class LogActividadScreen extends StatefulWidget {
   final String token;
-  final String rol;
 
-  const ListarVentasScreen({Key? key,
-    required this.token,
-    required this.rol}) : super(key: key);
+  const LogActividadScreen({Key? key, required this.token}) : super(key: key);
 
   @override
-  _ListarVentasScreenState createState() => _ListarVentasScreenState();
+  _LogActividadScreenState createState() => _LogActividadScreenState();
 }
 
-class _ListarVentasScreenState extends State<ListarVentasScreen> {
-  List<dynamic> ventas = [];
-  List<dynamic> filteredVentas = [];
+class _LogActividadScreenState extends State<LogActividadScreen> {
+  List<LogActividad> logs = [];
+  List<LogActividad> filteredLogs = [];
   bool isLoading = true;
   String searchQuery = '';
   String currentSort = 'none';
@@ -25,91 +22,92 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
   @override
   void initState() {
     super.initState();
-    fetchVentas();
+    fetchLogs();
   }
 
-  void _sortVentas(String sortType) {
+  void _sortLogs(String sortType) {
     setState(() {
       currentSort = sortType;
       switch (sortType) {
         case 'recent':
-          filteredVentas.sort((a, b) => b['id'].compareTo(a['id']));
+          filteredLogs.sort((a, b) => b.fecha.compareTo(a.fecha));
           break;
         case 'oldest':
-          filteredVentas.sort((a, b) => a['id'].compareTo(b['id']));
+          filteredLogs.sort((a, b) => a.fecha.compareTo(b.fecha));
           break;
         default:
-          filteredVentas = List.from(ventas.where((venta) {
-            final compradorId = venta['id_comprador'].toString().toLowerCase();
-            final loteId = venta['id_lote'].toString().toLowerCase();
-            return compradorId.contains(searchQuery) ||
-                loteId.contains(searchQuery);
+          filteredLogs = List.from(logs.where((log) {
+            final usuarioId = log.usuario.toString().toLowerCase();
+            final accion = log.accion.toLowerCase();
+            return usuarioId.contains(searchQuery) ||
+                accion.contains(searchQuery);
           }));
       }
     });
   }
 
-  Future<void> fetchVentas() async {
-    final url = Uri.parse('http://192.168.1.46:8000/listar-ventas/');
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${widget.token}',
-      },
-    );
+  String formatearFecha(String fechaISO) {
+    try {
+      final DateTime fecha = DateTime.parse(fechaISO);
+      return DateFormat('dd/MM/yyyy HH:mm').format(fecha);
+    } catch (e) {
+      return 'Fecha no válida';
+    }
+  }
 
-    if (response.statusCode == 200) {
-      setState(() {
-        ventas = jsonDecode(response.body);
-        filteredVentas = ventas;
-        isLoading = false;
-      });
-    } else {
+  Future<void> fetchLogs() async {
+    const String baseUrl = "http://192.168.1.46:8000/log-actividad/";
+    try {
+      final response = await http.get(
+        Uri.parse(baseUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          logs = (jsonDecode(response.body) as List)
+              .map((log) => LogActividad.fromJson(log))
+              .toList();
+          filteredLogs = logs;
+          isLoading = false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error al obtener logs de actividad'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al obtener ventas'),
+        SnackBar(
+          content: Text('Error de conexión: $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
   }
 
-  void _filterVentas(String query) {
+  void _filterLogs(String query) {
     setState(() {
       searchQuery = query.toLowerCase();
-      filteredVentas = ventas.where((venta) {
-        final compradorId = venta['id_comprador'].toString().toLowerCase();
-        final loteId = venta['id_lote'].toString().toLowerCase();
-        return compradorId.contains(searchQuery) ||
-            loteId.contains(searchQuery);
+      filteredLogs = logs.where((log) {
+        final usuarioId = log.usuario.toString().toLowerCase();
+        final accion = log.accion.toLowerCase();
+        return usuarioId.contains(searchQuery) ||
+            accion.contains(searchQuery);
       }).toList();
       if (currentSort != 'none') {
-        _sortVentas(currentSort);
+        _sortLogs(currentSort);
       }
     });
   }
 
-  void _editarVenta(Map<String, dynamic> venta) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditarVentaScreen(
-          ventaId: venta['id'],
-          precio: double.parse(venta['precio_venta'].toString()),
-          condiciones: venta['condiciones'],
-          token: widget.token,
-          rol: widget.rol,
-        ),
-      ),
-    );
-
-    if (result == true) {
-      fetchVentas();
-    }
-  }
-
-  Widget _buildVentaItem(Map<String, dynamic> venta) {
+  Widget _buildLogItem(LogActividad log) {
     return Card(
       color: Colors.lightBlue.shade50,
       elevation: 3,
@@ -133,30 +131,21 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Venta #${venta['id']}',
-                    style: const TextStyle(
+                  const Text(
+                    'Historial',
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
                   Text(
-                    'Lote: ${venta['id_lote']}',
+                    'Usuario: ${log.usuario}',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 14,
                     ),
                   ),
                 ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit, size: 20),
-              color: Colors.blue,
-              onPressed: () => _editarVenta(venta),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.blue.withOpacity(0.1),
-                padding: const EdgeInsets.all(8),
               ),
             ),
           ],
@@ -168,21 +157,16 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildInfoRow(
-                  Icons.person,
-                  'Comprador',
-                  venta['id_comprador'].toString(),
+                  Icons.details,
+                  'Acción',
+                  log.accion,
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
-                  Icons.attach_money,
-                  'Precio',
-                  '\$${venta['precio_venta']}',
-                ),
-                const SizedBox(height: 8),
-                _buildInfoRow(
-                  Icons.description,
-                  'Condiciones',
-                  venta['condiciones'] ?? 'No especificado',
+                  Icons.calendar_today,
+                  'Fecha',
+                  formatearFecha(log.fecha)
+                  ,
                 ),
               ],
             ),
@@ -195,7 +179,7 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
+        Icon(icon, size: 20, color: Colors.blue), // Changed to blue
         const SizedBox(width: 8),
         Text(
           '$label: ',
@@ -222,7 +206,7 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
       appBar: AppBar(
         elevation: 0,
         title: const Text(
-          'Lista de Ventas',
+          'Historial de Acciones',
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
         backgroundColor: Colors.transparent,
@@ -275,25 +259,24 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                   child: TextField(
                     cursorColor: Colors.black,
                     decoration: InputDecoration(
-                      labelText: 'Buscar por ID de Comprador o Lote',
+                      labelText: 'Buscar por Usuario o Acción',
                       labelStyle: const TextStyle(
                         color: Colors.black,
                       ),
                       prefixIcon: const Icon(Icons.search, color: Colors.blue,),
                       suffixIcon: PopupMenuButton<String>(
                         color: Colors.blue.shade50,
-
                         icon: Icon(
                           Icons.filter_list,
                           color: currentSort != 'none' ? Colors.blue : Colors.grey,
                         ),
-                        onSelected: _sortVentas,
+                        onSelected: _sortLogs,
                         itemBuilder: (BuildContext context) => [
                           const PopupMenuItem(
                             value: 'recent',
                             child: Row(
                               children: [
-                                Icon(Icons.arrow_upward, size: 20),
+                                Icon(Icons.arrow_upward, color: Colors.blue, size: 20),
                                 SizedBox(width: 8),
                                 Text('Más reciente'),
                               ],
@@ -303,7 +286,7 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                             value: 'oldest',
                             child: Row(
                               children: [
-                                Icon(Icons.arrow_downward, size: 20),
+                                Icon(Icons.arrow_downward, color: Colors.blue, size: 20),
                                 SizedBox(width: 8),
                                 Text('Más antiguo'),
                               ],
@@ -313,7 +296,7 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                             value: 'none',
                             child: Row(
                               children: [
-                                Icon(Icons.clear_all, size: 20),
+                                Icon(Icons.clear_all, color: Colors.blue, size: 20),
                                 SizedBox(width: 8),
                                 Text('Sin filtro'),
                               ],
@@ -335,13 +318,13 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                         vertical: 12,
                       ),
                     ),
-                    onChanged: _filterVentas,
+                    onChanged: _filterLogs,
                   ),
                 ),
                 Expanded(
                   child: isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : filteredVentas.isEmpty
+                      : filteredLogs.isEmpty
                       ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -349,14 +332,14 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                         Icon(
                           Icons.search_off,
                           size: 64,
-                          color: Colors.grey[400],
+                          color: Colors.blue, // Changed to blue
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No hay ventas que coincidan\ncon la búsqueda',
+                          'No hay logs que coincidan\ncon la búsqueda',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: Colors.blue.shade600,
                             fontSize: 16,
                           ),
                         ),
@@ -365,9 +348,9 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
                   )
                       : ListView.builder(
                     padding: const EdgeInsets.only(bottom: 16),
-                    itemCount: filteredVentas.length,
+                    itemCount: filteredLogs.length,
                     itemBuilder: (context, index) {
-                      return _buildVentaItem(filteredVentas[index]);
+                      return _buildLogItem(filteredLogs[index]);
                     },
                   ),
                 ),
@@ -376,6 +359,27 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Modelo para los datos del log
+class LogActividad {
+  final String usuario;
+  final String accion;
+  final String fecha;
+
+  LogActividad({
+    required this.usuario,
+    required this.accion,
+    required this.fecha
+  });
+
+  factory LogActividad.fromJson(Map<String, dynamic> json) {
+    return LogActividad(
+      usuario: json['id_usuario'].toString(),
+      accion: json['accion'],
+      fecha: json['fecha'],
     );
   }
 }

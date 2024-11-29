@@ -26,7 +26,7 @@ class _ListadoPlanosScreenState extends State<ListadoPlanosScreen>
   final ScrollController _scrollController = ScrollController();
   late AnimationController _animationController;
 
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static const String baseUrl = 'http://192.168.1.46:8000';
   static const String planosEndpoint = '/listar-planos/';
 
   @override

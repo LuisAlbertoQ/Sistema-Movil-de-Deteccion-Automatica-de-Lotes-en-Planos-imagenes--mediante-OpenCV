@@ -210,7 +210,7 @@ def subir_plano(request):
             for lote_data in lotes:
                 Lote.objects.create(
                     id_plano=plano,
-                    nombre=lote_data['nombre'],  # Asignar el nombre del lote
+                    nombre=lote_data['nombre'],
                     coordenadas=lote_data['coordenadas'],
                     estado=lote_data['estado'],
                     precio=lote_data['precio'],
@@ -227,7 +227,7 @@ def subir_plano(request):
 def listar_planos(request):
     planos = Plano.objects.all()
     serializer = PlanoSerializer(planos, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)  # Enviar la respuesta en formato JSON
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 '''
 @api_view(['POST'])
@@ -329,7 +329,7 @@ def registrar_venta(request):
         
         LogActividad.objects.create(
             id_usuario=request.user,
-            accion=f'Venta {venta.id} registrada'    
+            accion=f'Venta {venta.id} registrada, y lote {lote.id} marcado como vendido'    
         )
 
         serializer = VentaSerializer(venta)
@@ -338,7 +338,8 @@ def registrar_venta(request):
         return Response({'error': 'Lote no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     except Usuario.DoesNotExist:
         return Response({'error': 'Comprador no encontrado'}, status=status.HTTP_404_NOT_FOUND)
-    
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminOrAgente])
 def listar_ventas(request):

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_lotes_frontend/log_actividad_acreen.dart';
 import 'package:gestion_lotes_frontend/ventas/listar_ventas_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -53,7 +54,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
   Future<void> obtenerPerfilUsuario() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/obtener-perfil/'),
+        Uri.parse('http://192.168.1.46:8000/obtener-perfil/'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
@@ -163,22 +164,22 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                       SizedBox(height: 12),
                       Text(
                         username,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           rol.toUpperCase(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -234,6 +235,19 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                     context,
                     MaterialPageRoute(
                       builder: (context) => ListarVentasScreen(token: widget.token, rol: widget.rol,),
+                    ),
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.history,
+                title: 'Historial',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LogActividadScreen(token: widget.token,),
                     ),
                   );
                 },

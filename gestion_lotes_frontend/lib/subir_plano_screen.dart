@@ -53,7 +53,7 @@ class _SubirPlanoScreenState extends State<SubirPlanoScreen> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.0.2.2:8000/subir-plano/'),
+        Uri.parse('http://192.168.1.46:8000/subir-plano/'),
       );
 
       request.headers['Authorization'] = 'Bearer ${widget.token}';
