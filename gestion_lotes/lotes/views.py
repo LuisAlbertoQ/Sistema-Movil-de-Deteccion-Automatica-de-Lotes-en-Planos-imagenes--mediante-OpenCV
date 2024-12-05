@@ -1,5 +1,5 @@
 from urllib.request import Request
-import cv2
+import cv2, re
 import numpy as np
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -19,10 +19,47 @@ from shapely.geometry import Polygon, MultiPolygon
 @api_view(['POST'])
 def registro(request):
     data = request.data
+    
+    
     if 'username' not in data or 'password' not in data:
         return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    password = data['password']
+    
+    #Longitud de la Contraseña
+    if len(password)<8:
+        return Response({
+            'password': 'la Contrasenia debe tener al menos 8 careacteres'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    #Una Mayuscula
+    if not re.search(r'[A-Z]', password):
+        return Response({
+            'password': 'La contrasenia debe contener al menos una letra mayuscula'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    #Un Numero
+    if not re.search(r'\d', password):
+        return Response({
+            'password': 'La contrasenia debe tener un numero'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    #Un Caracter especial
+    if not re.search(r'[!@#$%^&*()_+\-=\[\]{};:\'",.<>?]', password):
+        return Response({
+            'password': 'La contrasenia debe contener al menos un caracter especial'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    if Usuario.objects.filter(username=data['username']).exists():
+        return Response({'username': 'El nombre de usuario ya esta en uso'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    if Usuario.objects.filter(email=data['email']).exists():
+        return Response({'email': 'El correo electronico ya esta registrado'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
     password_hashed = make_password(data['password'])
+    
     
     usuario = Usuario.objects.create(
         username=data['username'],
@@ -32,13 +69,15 @@ def registro(request):
         rol=data.get('rol', 'usuario')  # Por defecto, asignamos el rol de usuario
     )
     
+    # Log the activity
     LogActividad.objects.create(
         id_usuario=usuario,
         accion='Usuario registrado',
     )
     
+    # Serialize
     serializer = UsuarioSerializer(usuario)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.data, status=status.HTTP_201_CREATED, content_type='application/json; charset=utf-8')
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -59,6 +98,11 @@ def login(request):
     username = request.data.get('username')
     password = request.data.get('password')
     
+    
+    if len(password) < 8:
+        return Response({
+            'detail': 'La contraseña debe tener al menos 8 caracteres'
+        }, status=status.HTTP_400_BAD_REQUEST)
     usuario = authenticate(request, username=username, password=password)
 
     if usuario is not None:

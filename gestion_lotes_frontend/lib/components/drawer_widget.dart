@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:gestion_lotes_frontend/log_actividad_acreen.dart';
+import 'package:gestion_lotes_frontend/screens/log_actividad_screen.dart';
 import 'package:gestion_lotes_frontend/ventas/listar_ventas_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'home_screen.dart';
+import '../screens/home_screen.dart';
 import '../listado_planos_screen.dart';
 import '../main.dart';
 
@@ -94,7 +94,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       hoverColor: Colors.blue.shade50,
       selectedTileColor: Colors.blue.shade50,
     );
@@ -239,6 +239,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                   );
                 },
               ),
+              if (widget.rol == 'admin')
               _buildDrawerItem(
                 icon: Icons.history,
                 title: 'Historial',

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'login_screen.dart';
+import 'package:gestion_lotes_frontend/screens/login_screen.dart';
+import 'package:gestion_lotes_frontend/services/register_service.dart';
+import 'package:gestion_lotes_frontend/components/custom_text_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -30,25 +30,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse('http://192.168.1.46:8000/registro/'),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: jsonEncode({
-          'username': usernameController.text.trim(),
-          'password': passwordController.text,
-          'email': emailController.text.trim(),
-          'nombre': nombreController.text.trim(),
-          'rol': rolController.text.isEmpty ? 'usuario' : rolController.text,
-        }),
+      final result = await RegisterService.registerUser(
+        username: usernameController.text.trim(),
+        password: passwordController.text,
+        email: emailController.text.trim(),
+        nombre: nombreController.text.trim(),
+        rol: rolController.text.isEmpty ? 'usuario' : rolController.text,
       );
 
-      if (response.statusCode == 201) {
-        _showSuccessDialog(context);
-      } else {
-        _showErrorSnackBar(context, response.body);
-      }
+      _showSuccessDialog(context);
     } catch (e) {
-      _showErrorSnackBar(context, 'Error de conexión: $e');
+      _showErrorSnackBar(context, e.toString());
     } finally {
       setState(() => _isLoading = false);
     }
@@ -60,7 +52,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          backgroundColor: Colors.blue.shade50,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15)),
           title: Text('¡Registro Exitoso!'),
           content: Text('Tu cuenta ha sido creada correctamente.'),
           actions: [
@@ -71,8 +65,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Navigator.pushReplacement(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        LoginScreen(),
+                    transitionsBuilder: (context, animation, secondaryAnimation,
+                        child) {
                       return FadeTransition(opacity: animation, child: child);
                     },
                   ),
@@ -102,7 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Fondo con gradiente
+          // Fondo con gradiente y círculos decorativos (igual al código original)
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -154,10 +150,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.arrow_back_ios, color: Colors.blue.shade600),
+                          icon: Icon(Icons.arrow_back_ios, color: Colors.blue
+                              .shade600),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
-                        Text(
+                        const Text(
                           'Registro',
                           style: TextStyle(
                             fontSize: 24,
@@ -214,7 +211,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return Transform.scale(
                           scale: value,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : () => register(context),
+                            onPressed: _isLoading ? null : () =>
+                                register(context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade600,
                               foregroundColor: Colors.white,
@@ -235,24 +233,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             )
                                 : const Text(
                               'Registrarse',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w600),
                             ),
                           ),
                         );
                       },
                     ),
-
                     SizedBox(height: 20),
 
-                    // Enlace para ir al login
+                    //Enlace para ir al Login
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
-                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              return FadeTransition(opacity: animation, child: child);
+                            pageBuilder: (context, animation,
+                                secondaryAnimation) => LoginScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              return FadeTransition(
+                                  opacity: animation, child: child);
                             },
                           ),
                         );
@@ -427,7 +428,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         value: rolController.text.isEmpty ? 'usuario' : rolController.text,
         decoration: InputDecoration(
           labelText: 'Rol',
-          prefixIcon: Icon(Icons.admin_panel_settings, color: Colors.blue.shade600),
+          prefixIcon: Icon(
+              Icons.admin_panel_settings, color: Colors.blue.shade600),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide.none,

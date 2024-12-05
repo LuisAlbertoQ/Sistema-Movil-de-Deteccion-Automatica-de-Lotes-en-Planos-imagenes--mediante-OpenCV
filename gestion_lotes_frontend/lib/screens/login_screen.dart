@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gestion_lotes_frontend/components/drawer_widget.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'components/home_screen.dart';
-import 'listado_planos_screen.dart';
+import 'package:gestion_lotes_frontend/services/auth_service.dart';
+import 'package:gestion_lotes_frontend/components/loading_dialog.dart';
+
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -39,112 +38,48 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Future<void> login(BuildContext context, String username, String password) async {
+    final username = usernameController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning, color: Colors.white),
+              SizedBox(width: 8),
+              Text('Por favor, completa todos los campos'),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: EdgeInsets.all(10),
+        ),
+      );
+      return;
+    }
+
     try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return Center(
-            child: Material( //para quitar el borde amarillo
-              type: MaterialType.transparency,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 15,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
-                            strokeWidth: 3,
-                          ),
-                        ),
-                        Icon(
-                          Icons.lock_open_rounded,
-                          size: 30,
-                          color: Colors.blue.shade600,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 24),
-                    Text(
-                      'Verificando credenciales',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Por favor espere...',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-
-      final response = await http.post(
-        Uri.parse('http://192.168.1.46:8000/api/token/'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'username': username,
-          'password': password,
-        }),
-      );
-
+      showLoadingDialog(context);
+      final result = await AuthService.login(username, password);
       Navigator.pop(context);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final token = data['access'];
-        final rol = data['rol'];
-
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                HomeScreen(token: token.toString(),rol: rol.toString(),),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: Duration(milliseconds: 500),
-          ),
-        );
-      } else {
-        String errorMessage = 'Error en el inicio de sesión';
-        if (response.statusCode == 401) {
-          errorMessage = 'Usuario o contraseña incorrectos';
-        } else if (response.statusCode == 400) {
-          errorMessage = 'Datos de inicio de sesión inválidos';
-        }
-        throw Exception(errorMessage);
-      }
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              HomeScreen(token: result['access'], rol: result['rol']),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: Duration(milliseconds: 500),
+        ),
+      );
     } catch (e) {
+      Navigator.pop(context); // Dismiss loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(

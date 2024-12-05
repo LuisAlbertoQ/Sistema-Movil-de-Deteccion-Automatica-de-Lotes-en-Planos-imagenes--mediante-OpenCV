@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:gestion_lotes_frontend/models/log_actividad_model.dart';
 import 'package:intl/intl.dart';
+import '../services/log_actividad_service.dart';
+import '../components/log_actividad_item.dart';
 
 class LogActividadScreen extends StatefulWidget {
   final String token;
@@ -56,32 +57,13 @@ class _LogActividadScreenState extends State<LogActividadScreen> {
   }
 
   Future<void> fetchLogs() async {
-    const String baseUrl = "http://192.168.1.46:8000/log-actividad/";
     try {
-      final response = await http.get(
-        Uri.parse(baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.token}',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          logs = (jsonDecode(response.body) as List)
-              .map((log) => LogActividad.fromJson(log))
-              .toList();
-          filteredLogs = logs;
-          isLoading = false;
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al obtener logs de actividad'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      final fetchedLogs = await LogActividadService.fetchLogs(widget.token);
+      setState(() {
+        logs = fetchedLogs;
+        filteredLogs = logs;
+        isLoading = false;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -105,99 +87,6 @@ class _LogActividadScreenState extends State<LogActividadScreen> {
         _sortLogs(currentSort);
       }
     });
-  }
-
-  Widget _buildLogItem(LogActividad log) {
-    return Card(
-      color: Colors.lightBlue.shade50,
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ExpansionTile(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.receipt_long,
-                color: Colors.blue,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Historial',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    'Usuario: ${log.usuario}',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow(
-                  Icons.details,
-                  'Acción',
-                  log.accion,
-                ),
-                const SizedBox(height: 8),
-                _buildInfoRow(
-                  Icons.calendar_today,
-                  'Fecha',
-                  formatearFecha(log.fecha)
-                  ,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Colors.blue), // Changed to blue
-        const SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ],
-    );
   }
 
   @override
@@ -332,7 +221,7 @@ class _LogActividadScreenState extends State<LogActividadScreen> {
                         Icon(
                           Icons.search_off,
                           size: 64,
-                          color: Colors.blue, // Changed to blue
+                          color: Colors.blue,
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -350,7 +239,10 @@ class _LogActividadScreenState extends State<LogActividadScreen> {
                     padding: const EdgeInsets.only(bottom: 16),
                     itemCount: filteredLogs.length,
                     itemBuilder: (context, index) {
-                      return _buildLogItem(filteredLogs[index]);
+                      return LogActividadItem(
+                        log: filteredLogs[index],
+                        formatearFecha: formatearFecha,
+                      );
                     },
                   ),
                 ),
@@ -359,27 +251,6 @@ class _LogActividadScreenState extends State<LogActividadScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// Modelo para los datos del log
-class LogActividad {
-  final String usuario;
-  final String accion;
-  final String fecha;
-
-  LogActividad({
-    required this.usuario,
-    required this.accion,
-    required this.fecha
-  });
-
-  factory LogActividad.fromJson(Map<String, dynamic> json) {
-    return LogActividad(
-      usuario: json['id_usuario'].toString(),
-      accion: json['accion'],
-      fecha: json['fecha'],
     );
   }
 }

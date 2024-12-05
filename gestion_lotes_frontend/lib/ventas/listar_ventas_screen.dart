@@ -195,7 +195,7 @@ class _ListarVentasScreenState extends State<ListarVentasScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
+        Icon(icon, size: 20, color: Colors.blue[500]),
         const SizedBox(width: 8),
         Text(
           '$label: ',
