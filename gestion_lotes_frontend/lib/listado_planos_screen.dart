@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'components/drawer_widget.dart';
 import 'main.dart';
-import 'subir_plano_screen.dart';
+import '../screens/subir_plano_screen.dart';
 import 'imagen_completa_screen.dart';
 
 class ListadoPlanosScreen extends StatefulWidget {
