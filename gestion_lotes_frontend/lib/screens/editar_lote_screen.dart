@@ -1,6 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../services/lote_edit_service.dart';
 
 class EditarLoteScreen extends StatefulWidget {
   final int loteId;
@@ -20,44 +20,66 @@ class _EditarLoteScreenState extends State<EditarLoteScreen> {
   TextEditingController estadoController = TextEditingController();
   TextEditingController precioController = TextEditingController();
 
-  // Método para cargar datos del lote
-  Future<void> cargarDatosLote() async {
-    final response = await http.get(
-      Uri.parse('http://192.168.1.46:8000/lote/${widget.loteId}'),
-      headers: {'Authorization': 'Bearer ${widget.token}'},
-    );
+  // Instancia del servicio de lotes
+  final LoteService _loteService = LoteService();
 
-    if (response.statusCode == 200) {
-      var data = json.decode(response.body);
+  Future<void> cargarDatosLote() async {
+    try {
+      var data = await _loteService.obtenerDetalleLote(widget.loteId, widget.token);
       setState(() {
         nombreController.text = data['nombre'];
         estadoController.text = data['estado'];
         precioController.text = data['precio'].toString();
       });
-    } else {
-      // Manejo del error si no se pudo obtener el detalle del lote
+    } catch (e) {
+      // Manejo de errores
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al cargar los datos del lote')),
+      );
     }
   }
 
-  // Método para actualizar datos del lote
   Future<void> actualizarLote() async {
-    final response = await http.put(
-      Uri.parse('http://192.168.1.46:8000/editar-lote/${widget.loteId}'),
-      headers: {
-        'Authorization': 'Bearer ${widget.token}',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'nombre': nombreController.text,
-        'estado': estadoController.text,
-        'precio': double.parse(precioController.text),
-      }),
-    );
+    try {
+      final resultado = await _loteService.actualizarLote(
+          widget.loteId,
+          widget.token,
+          nombreController.text,
+          estadoController.text,
+          double.parse(precioController.text)
+      );
 
-    if (response.statusCode == 200) {
-      Navigator.pop(context); // Volver a la pantalla anterior
-    } else {
-      // Manejar error si no se pudo actualizar
+      // Mostrar SnackBar de éxito
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Lote actualizado correctamente',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+
+      Navigator.pop(context, true); // Pasar true para indicar actualización exitosa
+    } catch (e) {
+      // Mostrar SnackBar de error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Error al actualizar el lote',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
     }
   }
 
@@ -151,10 +173,10 @@ class _EditarLoteScreenState extends State<EditarLoteScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               labelText: 'Nombre',
-                              labelStyle: TextStyle(color: Colors.black),
+                              labelStyle: const TextStyle(color: Colors.black),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                                borderSide: const BorderSide(color: Colors.blue, width: 1.0),
                               ),
                             ),
                           ),
@@ -168,10 +190,10 @@ class _EditarLoteScreenState extends State<EditarLoteScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               labelText: 'Estado',
-                              labelStyle: TextStyle(color: Colors.black),
+                              labelStyle: const TextStyle(color: Colors.black),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                                borderSide: const BorderSide(color: Colors.blue, width: 1.0),
                               ),
                             ),
                           ),

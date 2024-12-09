@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'editar_lote_screen.dart';
+import 'package:gestion_lotes_frontend/screens/editar_lote_screen.dart';
 import 'ventas/registrar_venta_screen.dart';
 import 'package:http/http.dart' as http;
 
