@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_lotes_frontend/screens/listar_ventas_screen.dart';
 import 'package:gestion_lotes_frontend/screens/log_actividad_screen.dart';
-import 'package:gestion_lotes_frontend/ventas/listar_ventas_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

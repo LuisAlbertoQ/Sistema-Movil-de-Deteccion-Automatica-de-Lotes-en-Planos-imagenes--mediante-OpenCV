@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../services/venta_edit_service.dart';
+import '../components/venta_form_field.dart';
 
 class EditarVentaScreen extends StatefulWidget {
   final String token;
@@ -26,6 +26,7 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
   late TextEditingController _precioController;
   late TextEditingController _condicionesController;
   bool isLoading = false;
+  final VentaService _ventaService = VentaService();
 
   @override
   void initState() {
@@ -39,52 +40,55 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
       isLoading = true;
     });
 
-    final url = Uri.parse('http://192.168.1.46:8000/editar-venta/${widget.ventaId}/');
-    final response = await http.put(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${widget.token}',
-      },
-      body: jsonEncode({
-        'precio_venta': double.parse(_precioController.text),
-        'condiciones': _condicionesController.text,
-      }),
-    );
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (response.statusCode == 200) {
-      Navigator.pop(context, true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Venta actualizada correctamente',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green[700],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
+    try {
+      final success = await _ventaService.actualizarVenta(
+        token: widget.token,
+        ventaId: widget.ventaId,
+        precio: double.parse(_precioController.text),
+        condiciones: _condicionesController.text,
       );
-    } else {
+
+      if (success) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Venta actualizada correctamente',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Error al actualizar la venta',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'Error al actualizar la venta',
-            style: TextStyle(color: Colors.white),
-          ),
+          content: Text('Error: $e'),
           backgroundColor: Colors.red[700],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
         ),
       );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -119,21 +123,13 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
       isLoading = true;
     });
 
-    final url = Uri.parse('http://192.168.1.46:8000/eliminar-venta/${widget.ventaId}/');
     try {
-      final response = await http.delete(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.token}',
-        },
+      final success = await _ventaService.eliminarVenta(
+        token: widget.token,
+        ventaId: widget.ventaId,
       );
 
-      setState(() {
-        isLoading = false;
-      });
-
-      if (response.statusCode == 204) {
+      if (success) {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -157,15 +153,16 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
         );
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error de conexión'),
+        SnackBar(
+          content: Text('Error de conexión: $e'),
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -185,11 +182,11 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
         iconTheme: IconThemeData(color: Colors.blue.shade600),
         actions: [
           if (widget.rol == 'admin')
-          IconButton(
-            icon: const Icon(Icons.delete),
-            color: Colors.red,
-            onPressed: isLoading ? null : eliminarVenta,
-          ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              color: Colors.red,
+              onPressed: isLoading ? null : eliminarVenta,
+            ),
         ],
       ),
       body: Stack(
@@ -266,43 +263,17 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      TextField(
-                        cursorColor: Colors.black,
+                      VentaFormField(
                         controller: _precioController,
+                        labelText: 'Precio de Venta',
+                        prefixIcon: Icons.attach_money,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          labelText: 'Precio de Venta',
-                          labelStyle: const TextStyle(
-                            color: Colors.blue
-                          ),
-                          prefixIcon: Icon(Icons.attach_money, color: Colors.blue.shade600),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
                       const SizedBox(height: 16),
-                      TextField(
-                        cursorColor: Colors.black,
+                      VentaFormField(
                         controller: _condicionesController,
-                        decoration: InputDecoration(
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          labelText: 'Condiciones',
-                          labelStyle: const TextStyle(
-                              color: Colors.blue
-                          ),
-                          prefixIcon: Icon(Icons.description, color: Colors.blue.shade600),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
+                        labelText: 'Condiciones',
+                        prefixIcon: Icons.description,
                       ),
                       const SizedBox(height: 32),
                       isLoading
@@ -334,5 +305,12 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _precioController.dispose();
+    _condicionesController.dispose();
+    super.dispose();
   }
 }
