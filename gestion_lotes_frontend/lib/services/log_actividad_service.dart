@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 import '../models/log_actividad_model.dart';
 
 class LogActividadService {
-  static const String baseUrl = "http://192.168.1.53:8000/log-actividad/";
-
   static Future<List<LogActividad>> fetchLogs(String token) async {
     final response = await http.get(
-      Uri.parse(baseUrl),
+      Uri.parse(ApiConfig.logActividadEndpoint),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',

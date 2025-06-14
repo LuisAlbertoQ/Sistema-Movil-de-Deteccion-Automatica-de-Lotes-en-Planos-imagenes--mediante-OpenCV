@@ -1,9 +1,8 @@
 import 'dart:convert';
+import 'package:gestion_lotes_frontend/config/api_config.dart';
 import 'package:http/http.dart' as http;
 
 class RegisterService {
-  static const String _baseUrl = 'http://192.168.1.53:8000/registro/';
-
   static Future<Map<String, dynamic>> registerUser({
     required String username,
     required String password,
@@ -13,7 +12,7 @@ class RegisterService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(ApiConfig.registerEndpoint),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Accept-Charset': 'utf-8'

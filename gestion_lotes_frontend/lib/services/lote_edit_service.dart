@@ -1,12 +1,12 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/api_config.dart';
 
 class LoteService {
-  static const String _baseUrl = 'http://192.168.1.53:8000';
 
   Future<dynamic> obtenerDetalleLote(int loteId, String token) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/lote/$loteId'),
+      Uri.parse(ApiConfig.loteEndpoint(loteId)),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -25,7 +25,7 @@ class LoteService {
       double precio
       ) async {
     final response = await http.put(
-      Uri.parse('$_baseUrl/editar-lote/$loteId'),
+      Uri.parse(ApiConfig.editarLoteEndpoint(loteId)),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

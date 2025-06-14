@@ -1,15 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 class AuthService {
-  static const String _baseUrl = 'http://192.168.1.53:8000/api/token/';
-
   static Future<Map<String, dynamic>> login(String username, String password) async {
     final response = await http.post(
-      Uri.parse(_baseUrl),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      Uri.parse(ApiConfig.tokenEndpoint),
+      headers: ApiConfig.jsonHeadersWithCharset,
       body: jsonEncode(<String, String>{
         'username': username,
         'password': password,

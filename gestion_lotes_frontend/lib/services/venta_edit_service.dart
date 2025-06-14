@@ -1,8 +1,8 @@
+import 'package:gestion_lotes_frontend/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class VentaService {
-  static const String _baseUrl = 'http://192.168.1.53:8000';
 
   Future<bool> actualizarVenta({
     required String token,
@@ -10,7 +10,7 @@ class VentaService {
     required double precio,
     required String condiciones
   }) async {
-    final url = Uri.parse('$_baseUrl/editar-venta/$ventaId/');
+    final url = Uri.parse(ApiConfig.editarVentaEndpoint(ventaId));
     final response = await http.put(
       url,
       headers: {
@@ -30,7 +30,7 @@ class VentaService {
     required String token,
     required int ventaId
   }) async {
-    final url = Uri.parse('$_baseUrl/eliminar-venta/$ventaId/');
+    final url = Uri.parse(ApiConfig.editarVentaEndpoint(ventaId));
     final response = await http.delete(
       url,
       headers: {

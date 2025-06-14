@@ -1,9 +1,10 @@
+import 'package:gestion_lotes_frontend/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class VentasService {
   static Future<List<dynamic>> fetchVentas(String token) async {
-    final url = Uri.parse('http://192.168.1.53:8000/listar-ventas/');
+    final url = Uri.parse(ApiConfig.ventasEndpoint);
     final response = await http.get(
       url,
       headers: {

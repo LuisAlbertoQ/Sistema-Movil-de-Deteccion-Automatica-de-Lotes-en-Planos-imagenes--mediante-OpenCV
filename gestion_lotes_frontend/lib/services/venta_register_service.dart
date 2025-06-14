@@ -1,11 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/api_config.dart';
 
 class VentaService {
-  final String baseUrl = 'http://192.168.1.53:8000';
-
   Future<List<dynamic>> obtenerCompradores(String token) async {
-    final url = Uri.parse('$baseUrl/compradores/');
+    final url = Uri.parse(ApiConfig.compradoresEndpoint);
     final response = await http.get(url, headers: {
       'Authorization': 'Bearer $token',
     });
@@ -24,7 +23,7 @@ class VentaService {
     required String precioVenta,
     required String condiciones,
   }) async {
-    final url = Uri.parse('$baseUrl/venta/');
+    final url = Uri.parse(ApiConfig.ventaEndpoint);
     final body = jsonEncode({
       'id_lote': idLote,
       'id_comprador': idComprador,
