@@ -17,3 +17,54 @@ class Plano {
     );
   }
 }
+
+class PlanoModel {
+  final int? id;
+  final String? nombrePlano;
+  final String? imagen;
+  final String? subidoPor;
+  final String? fechaSubida;
+
+  PlanoModel({
+    this.id,
+    this.nombrePlano,
+    this.imagen,
+    this.subidoPor,
+    this.fechaSubida,
+  });
+
+  factory PlanoModel.fromJson(Map<String, dynamic> json) {
+    return PlanoModel(
+      id: json['id'],
+      nombrePlano: json['nombre_plano'],
+      imagen: json['imagen'],
+      subidoPor: json['subido_por'],
+      fechaSubida: json['fecha_subida'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nombre_plano': nombrePlano,
+      'imagen': imagen,
+      'subido_por': subidoPor,
+      'fecha_subida': fechaSubida,
+    };
+  }
+
+  // Getter para obtener la URL completa de la imagen
+  String getImageUrl(String baseUrl) {
+    return imagen != null ? '$baseUrl$imagen' : '';
+  }
+
+  // Getter para verificar si tiene nombre
+  String get displayName {
+    return nombrePlano ?? 'Sin nombre';
+  }
+
+  // Getter para verificar si tiene usuario
+  String get displaySubidoPor {
+    return subidoPor ?? 'Desconocido';
+  }
+}

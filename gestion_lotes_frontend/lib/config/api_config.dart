@@ -1,22 +1,23 @@
+// lib/config/api_config.dart
 class ApiConfig {
   // Cambiar solo esta URL cuando necesites
-  static const String _baseUrl = 'http://192.168.1.53:8000';
+  static const String baseUrl = 'http://192.168.1.53:8000';
 
   // Endpoints específicos
-  static const String tokenEndpoint = '$_baseUrl/api/token/';
-  static const String registerEndpoint = '$_baseUrl/registro/';
-  static const String logActividadEndpoint = '$_baseUrl/log-actividad/';
-  static const String uploadPlanoEndpoint = '$_baseUrl/subir-plano/';
-  static const String compradoresEndpoint = '$_baseUrl/compradores/';
-  static const String ventasEndpoint = '$_baseUrl/listar-ventas/';
-  static const String ventaEndpoint = '$_baseUrl/venta/';
-  static const String obtenerLotesEndpoint = '$_baseUrl/obtener-lotes/';
+  static const String tokenEndpoint = '$baseUrl/api/token/';
+  static const String registerEndpoint = '$baseUrl/registro/';
+  static const String logActividadEndpoint = '$baseUrl/log-actividad/';
+  static const String uploadPlanoEndpoint = '$baseUrl/subir-plano/';
+  static const String compradoresEndpoint = '$baseUrl/compradores/';
+  static const String ventasEndpoint = '$baseUrl/listar-ventas/';
+  static const String ventaEndpoint = '$baseUrl/venta/';
+  static const String planosEndpoint = '$baseUrl/listar-planos/';
 
   // Métodos para endpoints dinámicos
-  static String loteEndpoint(int loteId) => '$_baseUrl/lote/$loteId';
-  static String editarLoteEndpoint(int loteId) => '$_baseUrl/editar-lote/$loteId';
-  static String editarVentaEndpoint(int ventaId) => '$_baseUrl/editar-venta/$ventaId/';
-  static String eliminarVentaEndpoint(int ventaId) => '$_baseUrl/eliminar-venta/$ventaId/';
+  static String loteEndpoint(int loteId) => '$baseUrl/lote/$loteId';
+  static String editarLoteEndpoint(int loteId) => '$baseUrl/editar-lote/$loteId';
+  static String editarVentaEndpoint(int ventaId) => '$baseUrl/editar-venta/$ventaId/';
+  static String eliminarVentaEndpoint(int ventaId) => '$baseUrl/eliminar-venta/$ventaId/';
 
   // Headers comunes
   static Map<String, String> get jsonHeaders => {
@@ -31,4 +32,7 @@ class ApiConfig {
   static Map<String, String> get jsonHeadersWithCharset => {
     'Content-Type': 'application/json; charset=UTF-8',
   };
+
+  // Configuración de timeouts
+  static const Duration requestTimeout = Duration(seconds: 10);
 }
