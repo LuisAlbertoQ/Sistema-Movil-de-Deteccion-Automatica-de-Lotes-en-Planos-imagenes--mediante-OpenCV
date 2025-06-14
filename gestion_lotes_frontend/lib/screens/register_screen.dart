@@ -3,6 +3,8 @@ import 'package:gestion_lotes_frontend/screens/login_screen.dart';
 import 'package:gestion_lotes_frontend/services/register_service.dart';
 import 'package:gestion_lotes_frontend/components/custom_text_field.dart';
 
+import '../components/decorative_background.dart';
+
 class RegisterScreen extends StatefulWidget {
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
@@ -99,44 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: Stack(
         children: [
           // Fondo con gradiente y círculos decorativos (igual al código original)
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.blue.shade50,
-                  Colors.white,
-                  Colors.blue.shade50,
-                ],
-              ),
-            ),
-          ),
-          // Círculos decorativos
-          Positioned(
-            top: -50,
-            right: -50,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.1),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.05),
-              ),
-            ),
-          ),
+          DecorativeBackground(),
           // Contenido principal
           SafeArea(
             child: SingleChildScrollView(

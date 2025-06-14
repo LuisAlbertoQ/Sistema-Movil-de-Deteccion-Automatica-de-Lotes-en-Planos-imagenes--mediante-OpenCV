@@ -5,7 +5,7 @@ import 'package:mime/mime.dart';
 
 class PlanoService {
   final String token;
-  static const String _baseUrl = 'http://192.168.1.46:8000/subir-plano/';
+  static const String _baseUrl = 'http://192.168.1.53:8000/subir-plano/';
 
   PlanoService(this.token);
 

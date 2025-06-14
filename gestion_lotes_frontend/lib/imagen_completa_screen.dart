@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:gestion_lotes_frontend/screens/editar_lote_screen.dart';
-import 'ventas/registrar_venta_screen.dart';
+import 'package:gestion_lotes_frontend/screens/registrar_venta_screen.dart';
 import 'package:http/http.dart' as http;
 
 class ImagenCompletaScreen extends StatefulWidget {
@@ -60,7 +60,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
     });
 
     try {
-      final String url = 'http://192.168.1.46:8000/obtener-lotes/${widget.planoData['id']}';
+      final String url = 'http://192.168.1.53:8000/obtener-lotes/${widget.planoData['id']}';
 
       final response = await http.get(
         Uri.parse(url),

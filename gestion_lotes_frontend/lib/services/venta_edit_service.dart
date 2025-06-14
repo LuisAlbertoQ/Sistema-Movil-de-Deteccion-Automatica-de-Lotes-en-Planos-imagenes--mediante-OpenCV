@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class VentaService {
-  static const String _baseUrl = 'http://192.168.1.46:8000';
+  static const String _baseUrl = 'http://192.168.1.53:8000';
 
   Future<bool> actualizarVenta({
     required String token,

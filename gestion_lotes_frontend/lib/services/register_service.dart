@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class RegisterService {
-  static const String _baseUrl = 'http://192.168.1.46:8000/registro/';
+  static const String _baseUrl = 'http://192.168.1.53:8000/registro/';
 
   static Future<Map<String, dynamic>> registerUser({
     required String username,

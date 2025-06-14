@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../services/venta_register_service.dart';
+import '../components/decorative_background.dart';
 
 class RegistrarVentaScreen extends StatefulWidget {
   final String token;
@@ -28,6 +28,8 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
   final TextEditingController condicionesController = TextEditingController();
   final TextEditingController buscarCompradorController = TextEditingController();
 
+  final VentaService _ventaService = VentaService();
+
   int? compradorSeleccionadoId;
   List<Map<String, dynamic>> compradores = [];
   List<Map<String, dynamic>> compradoresFiltrados = [];
@@ -42,17 +44,13 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
   }
 
   Future<void> _cargarCompradores() async {
-    final url = Uri.parse('http://192.168.1.46:8000/compradores/');
-    final response = await http.get(url, headers: {
-      'Authorization': 'Bearer ${widget.token}',
-    });
-
-    if (response.statusCode == 200) {
+    try {
+      final result = await _ventaService.obtenerCompradores(widget.token);
       setState(() {
-        compradores = List<Map<String, dynamic>>.from(jsonDecode(response.body));
+        compradores = result.cast<Map<String, dynamic>>();
         compradoresFiltrados = compradores;
       });
-    } else {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al cargar la lista de compradores')),
       );
@@ -71,42 +69,38 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
   }
 
   Future<void> registrarVenta() async {
-    final url = Uri.parse('http://192.168.1.46:8000/venta/');
-    final body = jsonEncode({
-      'id_lote': widget.idLote,
-      'id_comprador': compradorSeleccionadoId,
-      'precio_venta': precioController.text.trim(),
-      'condiciones': condicionesController.text.trim(),
-    });
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer ${widget.token}',
-      },
-      body: body,
-    );
-
-    if (response.statusCode == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Venta registrada exitosamente',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green[700],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
+    try {
+      final success = await _ventaService.registrarVenta(
+        token: widget.token,
+        idLote: widget.idLote,
+        idComprador: compradorSeleccionadoId!,
+        precioVenta: precioController.text.trim(),
+        condiciones: condicionesController.text.trim(),
       );
-      Navigator.pop(context);
-    } else {
-      final errorMsg = jsonDecode(response.body)['error'] ?? 'Error al registrar venta';
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Venta registrada exitosamente',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al registrar venta')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
+        SnackBar(content: Text('Error al registrar venta: ${e.toString()}')),
       );
     }
   }
@@ -120,50 +114,13 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
       ),
       body: Stack(
         children: [
-          // Fondo con patrón de gradiente
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.blue.shade50,
-                  Colors.white,
-                  Colors.blue.shade50,
-                ],
-              ),
-            ),
-          ),
-          // Círculos decorativos
-          Positioned(
-            top: -50,
-            right: -50,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.1),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.05),
-              ),
-            ),
-          ),
+          // Fondo decorativo
+          DecorativeBackground(),
           // Contenido principal
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets .symmetric(horizontal: 30.0, vertical: 20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -339,5 +296,14 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    loteController.dispose();
+    precioController.dispose();
+    condicionesController.dispose();
+    buscarCompradorController.dispose();
+    super.dispose();
   }
 }

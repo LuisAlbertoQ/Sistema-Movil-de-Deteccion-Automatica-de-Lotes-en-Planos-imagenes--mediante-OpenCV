@@ -3,7 +3,7 @@ import 'dart:convert';
 
 class VentasService {
   static Future<List<dynamic>> fetchVentas(String token) async {
-    final url = Uri.parse('http://192.168.1.46:8000/listar-ventas/');
+    final url = Uri.parse('http://192.168.1.53:8000/listar-ventas/');
     final response = await http.get(
       url,
       headers: {

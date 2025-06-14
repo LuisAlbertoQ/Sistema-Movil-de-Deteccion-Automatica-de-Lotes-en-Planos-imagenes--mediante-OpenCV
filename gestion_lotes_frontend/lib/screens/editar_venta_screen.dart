@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_lotes_frontend/components/decorative_background.dart';
 import '../services/venta_edit_service.dart';
 import '../components/venta_form_field.dart';
 
@@ -192,44 +193,7 @@ class _EditarVentaScreenState extends State<EditarVentaScreen> {
       body: Stack(
         children: [
           // Fondo con patrón de gradiente
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.blue.shade50,
-                  Colors.white,
-                  Colors.blue.shade50,
-                ],
-              ),
-            ),
-          ),
-          // Círculos decorativos
-          Positioned(
-            top: -50,
-            right: -50,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.1),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.05),
-              ),
-            ),
-          ),
+          DecorativeBackground(),
           // Contenido principal
           Center(
             child: SingleChildScrollView(

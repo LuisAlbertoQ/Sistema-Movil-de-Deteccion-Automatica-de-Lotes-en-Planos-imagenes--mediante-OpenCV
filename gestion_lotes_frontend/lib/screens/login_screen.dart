@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_lotes_frontend/components/login_decorative_background.dart';
 import 'package:gestion_lotes_frontend/services/auth_service.dart';
 import 'package:gestion_lotes_frontend/components/loading_dialog.dart';
 
@@ -111,32 +112,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       body: Stack(
         children: [
           // Fondo con gradiente
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.blue.shade50,
-                  Colors.white,
-                  Colors.blue.shade100,
-                ],
-              ),
-            ),
-          ),
-          // Formas decorativas
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.1),
-              ),
-            ),
-          ),
+          DecorativeBackgroundLogin(),
           // Contenido principal
           SafeArea(
             child: Center(
