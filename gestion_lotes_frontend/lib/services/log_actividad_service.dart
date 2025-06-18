@@ -8,10 +8,7 @@ class LogActividadService {
   static Future<List<LogActividad>> fetchLogs(String token) async {
     final response = await http.get(
       Uri.parse(ApiConfig.logActividadEndpoint),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: ApiConfig.authHeaders(token),
     );
 
     if (response.statusCode == 200) {

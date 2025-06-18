@@ -12,6 +12,7 @@ class ApiConfig {
   static const String ventasEndpoint = '$baseUrl/listar-ventas/';
   static const String ventaEndpoint = '$baseUrl/venta/';
   static const String planosEndpoint = '$baseUrl/listar-planos/';
+  static const String perfilUsuarioEndpoint = '$baseUrl/obtener-perfil/';
 
   // Métodos para endpoints dinámicos
   static String loteEndpoint(int loteId) => '$baseUrl/lote/$loteId';
@@ -31,6 +32,7 @@ class ApiConfig {
 
   static Map<String, String> get jsonHeadersWithCharset => {
     'Content-Type': 'application/json; charset=UTF-8',
+    'Accept-Charset': 'utf-8'
   };
 
   // Configuración de timeouts

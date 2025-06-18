@@ -7,10 +7,7 @@ class VentasService {
     final url = Uri.parse(ApiConfig.ventasEndpoint);
     final response = await http.get(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: ApiConfig.authHeaders(token),
     );
 
     if (response.statusCode == 200) {

@@ -5,9 +5,7 @@ import '../config/api_config.dart';
 class VentaService {
   Future<List<dynamic>> obtenerCompradores(String token) async {
     final url = Uri.parse(ApiConfig.compradoresEndpoint);
-    final response = await http.get(url, headers: {
-      'Authorization': 'Bearer $token',
-    });
+    final response = await http.get(url, headers: ApiConfig.authHeaders(token));
 
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(jsonDecode(response.body));

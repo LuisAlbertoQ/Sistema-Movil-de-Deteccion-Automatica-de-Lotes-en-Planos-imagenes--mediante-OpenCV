@@ -14,7 +14,7 @@ class PlanoService {
 
       var request = http.MultipartRequest('POST', Uri.parse(ApiConfig.uploadPlanoEndpoint));
 
-      request.headers['Authorization'] = 'Bearer $token';
+      request.headers.addAll(ApiConfig.authHeaders(token));
       request.fields['nombre_plano'] = nombrePlano;
 
       request.files.add(

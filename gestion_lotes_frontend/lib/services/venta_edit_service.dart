@@ -13,10 +13,7 @@ class VentaService {
     final url = Uri.parse(ApiConfig.editarVentaEndpoint(ventaId));
     final response = await http.put(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: ApiConfig.authHeaders(token),
       body: jsonEncode({
         'precio_venta': precio,
         'condiciones': condiciones,
@@ -30,13 +27,10 @@ class VentaService {
     required String token,
     required int ventaId
   }) async {
-    final url = Uri.parse(ApiConfig.editarVentaEndpoint(ventaId));
+    final url = Uri.parse(ApiConfig.eliminarVentaEndpoint(ventaId));
     final response = await http.delete(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: ApiConfig.authHeaders(token),
     );
 
     return response.statusCode == 204;

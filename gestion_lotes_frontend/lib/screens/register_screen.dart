@@ -401,7 +401,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
         items: _roles.map((String role) {
           return DropdownMenuItem<String>(

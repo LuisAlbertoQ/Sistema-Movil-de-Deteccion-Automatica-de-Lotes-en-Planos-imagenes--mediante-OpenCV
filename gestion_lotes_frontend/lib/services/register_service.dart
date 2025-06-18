@@ -13,10 +13,7 @@ class RegisterService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.registerEndpoint),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept-Charset': 'utf-8'
-        },
+        headers: ApiConfig.jsonHeadersWithCharset,
         body: jsonEncode({
           'username': username,
           'password': password,

@@ -7,7 +7,7 @@ class LoteService {
   Future<dynamic> obtenerDetalleLote(int loteId, String token) async {
     final response = await http.get(
       Uri.parse(ApiConfig.loteEndpoint(loteId)),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: ApiConfig.authHeaders(token),
     );
 
     if (response.statusCode == 200) {
