@@ -20,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
-  final List<String> _roles = ['usuario', 'admin', 'agente'];
+  final List<String> _roles = ['usuario'/*'admin', 'agente'*/];
 
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
@@ -389,7 +389,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ],
       ),
-      child: DropdownButtonFormField<String>(
+      /*child: DropdownButtonFormField<String>(
         value: rolController.text.isEmpty ? 'usuario' : rolController.text,
         decoration: InputDecoration(
           labelText: 'Rol',
@@ -416,7 +416,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             });
           }
         },
-      ),
+      ),*/
     );
   }
 

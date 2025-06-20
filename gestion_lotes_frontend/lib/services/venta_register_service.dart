@@ -31,10 +31,7 @@ class VentaService {
 
     final response = await http.post(
       url,
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-      },
+      headers: ApiConfig.authHeaders(token),
       body: body,
     );
 

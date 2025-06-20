@@ -1,4 +1,3 @@
-from urllib.request import Request
 import cv2, re
 import numpy as np
 from rest_framework import status
@@ -98,17 +97,21 @@ def login(request):
     username = request.data.get('username')
     password = request.data.get('password')
     
-    
-    if len(password) < 8:
+    if not username or not password:
         return Response({
-            'detail': 'La contraseña debe tener al menos 8 caracteres'
+            'detail': 'Username y password son requeridos'
         }, status=status.HTTP_400_BAD_REQUEST)
+    
     usuario = authenticate(request, username=username, password=password)
 
     if usuario is not None:
-        # Usar el serializador personalizado
-        serializer = CustomTokenObtainPairSerializer()
         refresh = RefreshToken.for_user(usuario)
+        
+        # Log de actividad
+        LogActividad.objects.create(
+            id_usuario=usuario,
+            accion='Usuario inició sesión'
+        )
         
         return Response({
             'refresh': str(refresh),
@@ -120,7 +123,7 @@ def login(request):
         }, status=status.HTTP_200_OK)
     else:
         return Response({
-            'detail': 'No active account found with the given credentials'
+            'detail': 'Credenciales inválidas'
         }, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
@@ -134,6 +137,7 @@ def obtener_perfil_usuario(request):
     }
     return Response(data)
 
+# Función detectar los lotes en la imagen
 # Función detectar los lotes en la imagen
 def detectar_lotes(imagen_path, precio_base_por_m2=5, factor_ubicacion=0.9, area_minima=500, area_maxima=0.5):
     # Cargar la imagen
@@ -273,15 +277,7 @@ def listar_planos(request):
     serializer = PlanoSerializer(planos, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-'''
-@api_view(['POST'])
-def agregar_lote(request):
-    serializer = LoteSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-'''
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def obtener_lotes_por_plano(request, plano_id):
@@ -410,19 +406,27 @@ def eliminar_venta(request, venta_id):
     try:
         venta = Venta.objects.get(id=venta_id)
         lote = venta.id_lote
-        venta.delete()
         
-        lote.estado = 'disponible'
-        lote.save()
+        # Verificar que el lote existe antes de modificarlo
+        if lote:
+            lote.estado = 'disponible'
+            lote.save()
+        
+        venta.delete()
         
         LogActividad.objects.create(
             id_usuario=request.user,
-            accion=f'Venta {venta_id} eliminada y lote {lote.id} marcado como disponible'    
+            accion=f'Venta {venta_id} eliminada y lote {lote.id if lote else "N/A"} marcado como disponible'    
         )
         
-        return Response({'detail:''Venta eliminada exitosamente'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({
+            'detail': 'Venta eliminada exitosamente'
+        }, status=status.HTTP_204_NO_CONTENT)
+        
     except Venta.DoesNotExist:
-        return Response({'error': 'Venta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            'error': 'Venta no encontrada'
+        }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({
             'error': f'Error al procesar la solicitud: {str(e)}'
@@ -450,7 +454,7 @@ def editar_venta(request, venta_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def listar_compradores(request):
-    compradores = Usuario.objects.filter(rol='Usuario')
+    compradores = Usuario.objects.filter(rol='usuario')
     serializer = CompradoresSerializer(compradores, many=True)
     return Response(serializer.data)
 

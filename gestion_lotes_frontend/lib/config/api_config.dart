@@ -1,7 +1,7 @@
 // lib/config/api_config.dart
 class ApiConfig {
   // Cambiar solo esta URL cuando necesites
-  static const String baseUrl = 'http://192.168.1.53:8000';
+  static const String baseUrl = 'http://172.22.8.28:8000';
 
   // Endpoints específicos
   static const String tokenEndpoint = '$baseUrl/api/token/';

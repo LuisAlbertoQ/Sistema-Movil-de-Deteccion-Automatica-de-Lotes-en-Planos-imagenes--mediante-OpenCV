@@ -150,7 +150,7 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
                     // Campos de texto
                     Column(
                       children: [
-                        TextField(
+                        /*TextField(
                           controller: loteController,
                           decoration: InputDecoration(
                             labelText: 'ID del Lote',
@@ -161,7 +161,7 @@ class _RegistrarVentaScreenState extends State<RegistrarVentaScreen> {
                             ),
                           ),
                           enabled: false,
-                        ),
+                        ),*/
                         const SizedBox(height: 16),
                         TextField(
                           cursorColor: Colors.black,

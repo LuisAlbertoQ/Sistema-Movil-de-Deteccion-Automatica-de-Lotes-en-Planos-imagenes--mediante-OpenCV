@@ -60,7 +60,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
     });
 
     try {
-      final String url = 'http://192.168.1.53:8000/obtener-lotes/${widget.planoData['id']}';
+      final String url = 'http://172.22.8.28:8000/obtener-lotes/${widget.planoData['id']}';
 
       final response = await http.get(
         Uri.parse(url),
@@ -257,44 +257,120 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
   }
 
   void _mostrarDetallesLote(BuildContext context, Map<String, dynamic> lote) {
-    showModalBottomSheet(
-      backgroundColor: Colors.lightBlue.shade100,
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Text(
-                    'Detalles del Lote',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-                const SizedBox(height: 16,),
-                _buildDetalleItem('ID', lote['id']?.toString() ?? 'No disponible'),
-                _buildDetalleItem('Nombre', lote['nombre'] ?? 'No disponible'),
-                _buildDetalleItem('Estado', lote['estado'] ?? 'No disponible'),
-                _buildDetalleItem('Precio', '\$${lote['precio'] ?? 'No disponible'}'),
-                _buildDetalleItem('Área', '${lote['area_m2'] ?? 'No disponible'} m²'),
-                _buildDetalleItem('Forma', lote['forma'] ?? 'No disponible'),
-              ],
+    final bool isVendido = lote['estado']?.toString().toLowerCase() == 'vendido';
+    final Color primaryColor = isVendido ? Colors.red.shade700 : Colors.blue.shade700;
+    final Color backgroundColor = isVendido ? Colors.red.shade50 : Colors.blue.shade50;
 
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: backgroundColor,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Center(
+              child: Container(
+                width: 60,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             ),
-            Positioned(
-              right: 16,
-              bottom: 16,
+            const SizedBox(height: 16),
+            Center(
+              child: Text(
+                'Detalles del Lote',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Detalles del lote
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (widget.rol == 'admin' || widget.rol == 'agente')
-                  FloatingActionButton(
-                    heroTag: 'registrarVenta',
+                  _buildFormField(
+                    label: 'Nombre',
+                    value: lote['nombre'] ?? 'No disponible',
+                    icon: Icons.tag,
+                    color: primaryColor,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildStatusField(
+                    label: 'Estado',
+                    value: lote['estado'] ?? 'No disponible',
+                    color: primaryColor,
+                    isVendido: isVendido,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildFormField(
+                    label: 'Precio',
+                    value: '\$${lote['precio'] ?? 'No disponible'}',
+                    icon: Icons.attach_money,
+                    color: primaryColor,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildFormField(
+                    label: 'Área',
+                    value: '${lote['area_m2'] ?? 'No disponible'} m²',
+                    icon: Icons.aspect_ratio,
+                    color: primaryColor,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildFormField(
+                    label: 'Forma',
+                    value: lote['forma'] ?? 'No disponible',
+                    icon: Icons.polyline,
+                    color: primaryColor,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Botones de acción
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Botón de Vender - Solo mostrar si NO está vendido y el rol es adecuado
+                if (!isVendido && (widget.rol == 'admin' || widget.rol == 'agente'))
+                  _buildActionButton(
+                    context: context,
+                    icon: Icons.attach_money,
+                    label: 'Vender',
+                    color: Colors.green,
                     onPressed: () {
-                      Navigator.pop(context); // Cerrar el modal
+                      Navigator.pop(context);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -306,20 +382,17 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                             nombreLote: lote['nombre'],
                           ),
                         ),
-                      ).then((_) {
-                        _obtenerLotes();
-                      });
+                      ).then((_) => _obtenerLotes());
                     },
-                    backgroundColor: Colors.green.shade50,
-                    child: Icon(
-                        Icons.attach_money,
-                        color: Colors.green.shade800,
-                    ),
                   ),
-                  const SizedBox(height: 16), // Espacio entre botones
-                  if (widget.rol == 'admin')
-                  FloatingActionButton(
-                    heroTag: 'editarLote',
+
+                // Botón de Editar - Solo mostrar si NO está vendido y es admin
+                if (!isVendido && widget.rol == 'admin')
+                  _buildActionButton(
+                    context: context,
+                    icon: Icons.edit,
+                    label: 'Editar',
+                    color: Colors.blue,
                     onPressed: () {
                       Navigator.pop(context);
                       Navigator.push(
@@ -330,39 +403,168 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                             token: widget.token,
                           ),
                         ),
-                      ).then((_) {
-                        _obtenerLotes();
-                      });
+                      ).then((_) => _obtenerLotes());
                     },
-                    backgroundColor: Colors.blue.shade50,
-                    child: Icon(
-                        Icons.edit,
-                        color: Colors.blue.shade800),
                   ),
-                ],
-              ),
+
+                // Botón de Cerrar - Siempre visible
+                _buildActionButton(
+                  context: context,
+                  icon: Icons.close,
+                  label: 'Cerrar',
+                  color: Colors.grey,
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDetalleItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+  Widget _buildFormField({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+    bool isEditable = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
           ),
-          Expanded(
-            child: Text(value),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: Colors.grey.shade300,
+              width: 1.5,
+            ),
           ),
-        ],
-      ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+              ),
+              Icon(icon, color: color),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusField({
+    required String label,
+    required String value,
+    required Color color,
+    required bool isVendido,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isVendido ? Colors.red.shade50 : Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isVendido ? Colors.red.shade300 : Colors.blue.shade300,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isVendido ? Colors.red.shade700 : Colors.blue.shade700,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Icon(
+                isVendido ? Icons.check_circle : Icons.assignment_turned_in,
+                color: isVendido ? Colors.red.shade700 : Colors.blue.shade700,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.2),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: FloatingActionButton(
+            heroTag: UniqueKey(),
+            onPressed: onPressed,
+            backgroundColor: color,
+            elevation: 0,
+            mini: true,
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 

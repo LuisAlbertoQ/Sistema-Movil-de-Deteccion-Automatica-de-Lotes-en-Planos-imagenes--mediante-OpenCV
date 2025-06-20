@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -18,10 +18,16 @@ class UsuarioManager(BaseUserManager):
     def create_superuser(self, username, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('rol', 'admin')
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(username, email, password, **extra_fields)
 
-class Usuario(AbstractBaseUser):
+class Usuario(AbstractBaseUser, PermissionsMixin):
     ROLES = [
         ('admin', 'Administrador'),
         ('agente', 'Agente Inmobiliario'),
@@ -43,7 +49,17 @@ class Usuario(AbstractBaseUser):
     REQUIRED_FIELDS = ['email']
 
     def __str__(self):
-        return self.username
+        return f"{self.username} ({self.get_rol_display()})"
+    
+    def save(self, *args, **kwargs):
+        # Asignar automáticamente is_staff basado en el rol
+        if self.rol in ['admin', 'agente']:
+            self.is_staff = True
+        super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = "Usuario"
+        verbose_name_plural = "Usuarios"
 
 class Plano(models.Model):
     nombre_plano = models.CharField(max_length=100)
@@ -52,7 +68,11 @@ class Plano(models.Model):
     fecha_subida = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.archivo_plano.name
+        return self.nombre_plano
+    
+    class Meta:
+        verbose_name = "Plano"
+        verbose_name_plural = "Planos"
 
 class Lote(models.Model):
     ESTADO_LOTE = [
@@ -68,7 +88,11 @@ class Lote(models.Model):
     forma = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
-        return f"Lote {self.id} - Estado: {self.estado}"
+        return f"{self.nombre} - {self.get_estado_display()}"
+    
+    class Meta:
+        verbose_name = "Lote"
+        verbose_name_plural = "Lotes"
 
 class Venta(models.Model):
     id_lote = models.ForeignKey(Lote, on_delete=models.SET_NULL, null=True)
@@ -77,6 +101,13 @@ class Venta(models.Model):
     fecha_venta = models.DateTimeField(auto_now_add=True)
     condiciones = models.TextField()
 
+    def __str__(self):
+        return f"Venta #{self.id} - {self.id_lote.nombre if self.id_lote else 'Lote eliminado'}"
+    
+    class Meta:
+        verbose_name = "Venta"
+        verbose_name_plural = "Ventas"
+
 class LogActividad(models.Model):
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     accion = models.CharField(max_length=255)
@@ -84,3 +115,8 @@ class LogActividad(models.Model):
 
     def __str__(self):
         return f"{self.accion} - {self.fecha} por {self.id_usuario}"
+    
+    class Meta:
+        verbose_name = "Log de Actividad"
+        verbose_name_plural = "Logs de Actividad"
+        ordering = ['-fecha']

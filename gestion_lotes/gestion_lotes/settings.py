@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-)$@pp4s4^ns1=jotjlbzh6^xnjv=zr-2ugxr9+da@q92d)36ek
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.0.2.2', 'localhost', '127.0.0.1', '192.168.1.46', '192.168.1.103', '192.168.1.53', '172.22.3.18']
+ALLOWED_HOSTS = ['10.0.2.2', 'localhost', '127.0.0.1', '192.168.1.46', '192.168.1.103', '192.168.1.53', '172.22.3.18', '172.22.8.28']
 
 
 # Application definition
@@ -70,11 +70,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'lotes.middleware.AdminAccessMiddleware',  # Middleware personalizado para acceso al admin
+    'lotes.middleware.LoginAttemptMiddleware',  # Middleware personalizado para rastrear intentos de login
 ]
 
 AUTH_USER_MODEL = 'lotes.Usuario'
 
 ROOT_URLCONF = 'gestion_lotes.urls'
+# Configuraciones adicionales de seguridad para el admin
+SECURE_ADMIN_LOGIN = True
 
 TIME_ZONE = 'America/Lima'
 USE_TZ = True
@@ -150,6 +154,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
