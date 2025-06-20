@@ -65,16 +65,33 @@ class HomeScreen extends StatelessWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.blue.withOpacity(0.2),
+                                  color: Colors.blue.withOpacity(0.4),
                                   blurRadius: 20,
                                   spreadRadius: 5,
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              Icons.business,
-                              size: 70,
-                              color: Colors.blue.shade700,
+                            child: ClipOval(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Align( // <-- Añade este widget Align
+                                  alignment: Alignment.centerRight, // <-- Alinea la imagen al centro-derecha
+                                  child: Image.asset(
+                                    'assets/imagen/3322.jpg',
+                                    width: 140,
+                                    height: 140,
+                                    fit: BoxFit.contain,
+                                    // En caso de error al cargar la imagen, mostrar un ícono por defecto
+                                    errorBuilder: (context, error, stackTrace){
+                                      return Icon(
+                                        Icons.business,
+                                        size: 70,
+                                        color: Colors.blue.shade700,
+                                      );
+                                    },
+                                  ),
+                                ), // <-- Cierra el widget Align
+                              ),
                             ),
                           ),
                         );
@@ -89,8 +106,8 @@ class HomeScreen extends StatelessWidget {
                       builder: (context, double value, child) {
                         return Opacity(
                           opacity: value,
-                          child: Text(
-                            'Bienvenido al Sistema de Venta de Lotes',
+                          child: const Text(
+                            'Bienvenido a L2 Sistema de Venta de Lotes',
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,

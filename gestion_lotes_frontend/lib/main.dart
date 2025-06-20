@@ -62,31 +62,41 @@ class MainScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo animado
+                    // Logo animado rectangular
                     TweenAnimationBuilder(
                       tween: Tween<double>(begin: 0, end: 1),
-                      duration: const Duration(milliseconds: 800),
+                      duration: const Duration(milliseconds: 600),
                       builder: (context, double value, child) {
                         return Transform.scale(
                           scale: value,
                           child: Container(
-                            width: 140,
-                            height: 140,
+                            width: 300,
+                            height: 120,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.blue.withOpacity(0.2),
+                                  color: Colors.blue.withOpacity(0.4),
                                   blurRadius: 20,
                                   spreadRadius: 5,
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              Icons.map,
-                              size: 70,
-                              color: Colors.blue.shade700,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Image.asset(
+                                'assets/imagen/logoL2.png', // Ruta de tu imagen
+                                fit: BoxFit.contain,
+                                // En caso de error al cargar la imagen, mostrar un ícono por defecto
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    Icons.map,
+                                    size: 70,
+                                    color: Colors.blue.shade700,
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         );
