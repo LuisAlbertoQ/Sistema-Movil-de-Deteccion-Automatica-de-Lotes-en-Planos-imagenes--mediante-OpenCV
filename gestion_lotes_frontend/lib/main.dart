@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gestion_lotes_frontend/components/decorative_background.dart';
 import 'package:gestion_lotes_frontend/core/utils/time_utils.dart';
+import 'package:gestion_lotes_frontend/services/auth_service.dart';
 import 'screens/register_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
-  TimeUtils.initialize(); // Configura zonas horarias
+  TimeUtils.initialize();
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -42,8 +44,100 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const MainScreen(),
+      home: const AuthWrapper(),
     );
+  }
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({Key? key}) : super(key: key);
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isLoading = true;
+  bool _isAuthenticated = false;
+  String? _token;
+  String? _rol;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthStatus();
+  }
+
+  Future<void> _checkAuthStatus() async {
+    try {
+      final isAuth = await AuthService.isAuthenticated();
+
+      if (isAuth) {
+        final authData = await AuthService.getAuthData();
+        setState(() {
+          _isAuthenticated = true;
+          _token = authData['token'];
+          _rol = authData['rol'];
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isAuthenticated = false;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isAuthenticated = false;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.blue.shade400,
+                Colors.blue.shade600,
+              ],
+            ),
+          ),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Verificando autenticación...',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Si está autenticado, va directo al HomeScreen
+    if (_isAuthenticated && _token != null && _rol != null) {
+      return HomeScreen(token: _token!, rol: _rol!);
+    }
+
+    // Si no está autenticado, muestra la pantalla de bienvenida
+    return const MainScreen();
   }
 }
 
@@ -63,7 +157,7 @@ class MainScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo animado - Contenedor más grande con imagen que ocupa todo el espacio
+                    // Logo animado
                     TweenAnimationBuilder(
                       tween: Tween<double>(begin: 0, end: 1),
                       duration: const Duration(milliseconds: 600),
@@ -71,8 +165,8 @@ class MainScreen extends StatelessWidget {
                         return Transform.scale(
                           scale: value,
                           child: Container(
-                            width: 300, // Ancho aumentado
-                            height: 130, // Altura aumentada
+                            width: 300,
+                            height: 130,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
@@ -84,7 +178,6 @@ class MainScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            // Usamos ClipRRect para asegurar que la imagen respete los bordes redondeados
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20),
                               child: Image.asset(
@@ -177,9 +270,8 @@ class MainScreen extends StatelessWidget {
     );
   }
 
-  // Método para navegación con transición
   void _navigateTo(BuildContext context, Widget screen) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => screen,
@@ -198,7 +290,6 @@ class MainScreen extends StatelessWidget {
     );
   }
 
-  // Widget reutilizable para botones animados
   Widget _buildAnimatedButton({
     required VoidCallback onPressed,
     required Color backgroundColor,
@@ -244,7 +335,6 @@ class MainScreen extends StatelessWidget {
     );
   }
 
-  // Widget reutilizable para el texto de versión
   Widget _buildVersionText() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
