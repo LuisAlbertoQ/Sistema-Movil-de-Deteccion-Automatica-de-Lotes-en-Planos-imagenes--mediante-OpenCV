@@ -72,25 +72,20 @@ class HomeScreen extends StatelessWidget {
                               ],
                             ),
                             child: ClipOval(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Align( // <-- Añade este widget Align
-                                  alignment: Alignment.centerRight, // <-- Alinea la imagen al centro-derecha
-                                  child: Image.asset(
-                                    'assets/imagen/3322.jpg',
-                                    width: 140,
-                                    height: 140,
-                                    fit: BoxFit.contain,
-                                    // En caso de error al cargar la imagen, mostrar un ícono por defecto
-                                    errorBuilder: (context, error, stackTrace){
-                                      return Icon(
-                                        Icons.business,
-                                        size: 70,
-                                        color: Colors.blue.shade700,
-                                      );
-                                    },
-                                  ),
-                                ), // <-- Cierra el widget Align
+                              child: Center( // Widget Center para asegurar el centrado
+                                child: Image.asset(
+                                  'assets/imagen/3322.jpg',
+                                  width: 125, // Un poco menos que el contenedor para el padding
+                                  height: 120, // Cambiado a cover para mejor ajuste
+                                  alignment: Alignment.topLeft, // Alineación explícita
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.business,
+                                      size: 70,
+                                      color: Colors.blue.shade700,
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),

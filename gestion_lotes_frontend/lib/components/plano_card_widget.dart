@@ -20,15 +20,6 @@ class PlanoCardWidget extends StatelessWidget {
     required this.onTap,
   }) : super(key: key);
 
-  String formatearFecha(String? fechaISO) {
-    if (fechaISO == null) return 'No disponible';
-    try {
-      final DateTime fecha = DateTime.parse(fechaISO);
-      return DateFormat('dd/MM/yyyy HH:mm').format(fecha);
-    } catch (e) {
-      return 'Fecha no válida';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +196,7 @@ class PlanoCardWidget extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                formatearFecha(plano.fechaSubida),
+                plano.fechaSubidaFormateada, // Usamos el getter del modelo
                 style: TextStyle(
                   color: Colors.grey[700],
                   fontSize: 14,

@@ -125,22 +125,34 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     children: [
                       // Logo
                       Container(
-                        padding: EdgeInsets.all(20),
+                        padding: EdgeInsets.all(25),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.blue.withOpacity(0.2),
+                              color: Colors.blue.withOpacity(0.4),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
                           ],
                         ),
-                        child: Icon(
-                          Icons.map,
-                          size: 80,
-                          color: Colors.blue.shade700,
+                        child: ClipOval(
+                          child: Center( // Widget Center para asegurar el centrado
+                            child: Image.asset(
+                              'assets/imagen/3322.jpg',
+                              width: 125, // Un poco menos que el contenedor para el padding
+                              height: 120, // Cambiado a cover para mejor ajuste
+                              alignment: Alignment.topLeft, // Alineación explícita
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.map,
+                                  size: 70,
+                                  color: Colors.blue.shade700,
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
                       SizedBox(height: 40),

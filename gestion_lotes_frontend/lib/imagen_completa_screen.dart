@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:gestion_lotes_frontend/config/api_config.dart';
 import 'package:gestion_lotes_frontend/screens/editar_lote_screen.dart';
 import 'package:gestion_lotes_frontend/screens/registrar_venta_screen.dart';
 import 'package:http/http.dart' as http;
@@ -25,18 +26,68 @@ class ImagenCompletaScreen extends StatefulWidget {
   _ImagenCompletaScreenState createState() => _ImagenCompletaScreenState();
 }
 
-class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
+class _ImagenCompletaScreenState extends State<ImagenCompletaScreen>
+    with TickerProviderStateMixin {
   List<Map<String, dynamic>> lotes = [];
   bool isLoading = true;
   String? error;
   Size imageSize = Size.zero;
   GlobalKey imageKey = GlobalKey();
 
+  // Controladores de animación para cada lote
+  Map<int, AnimationController> _animationControllers = {};
+  Map<int, Animation<double>> _pulseAnimations = {};
+
   @override
   void initState() {
     super.initState();
     _obtenerLotes();
     _precargaImagen();
+  }
+
+  @override
+  void dispose() {
+    // Limpiar controladores de animación
+    _animationControllers.values.forEach((controller) => controller.dispose());
+    super.dispose();
+  }
+
+  void _initializeAnimations() {
+    // Limpiar animaciones anteriores
+    _animationControllers.values.forEach((controller) => controller.dispose());
+    _animationControllers.clear();
+    _pulseAnimations.clear();
+
+    // Crear animaciones para cada lote disponible
+    for (int i = 0; i < lotes.length; i++) {
+      final lote = lotes[i];
+      final bool isVendido = lote['estado']?.toLowerCase() == 'vendido';
+
+      if (!isVendido) {
+        final controller = AnimationController(
+          duration: const Duration(milliseconds: 1500),
+          vsync: this,
+        );
+
+        final animation = Tween<double>(
+          begin: 0.9,
+          end: 1.0,
+        ).animate(CurvedAnimation(
+          parent: controller,
+          curve: Curves.fastOutSlowIn,
+        ));
+
+        _animationControllers[i] = controller;
+        _pulseAnimations[i] = animation;
+
+        // Iniciar animación con un delay aleatorio para que no todos pulsen al mismo tiempo
+        Future.delayed(Duration(milliseconds: i * 200), () {
+          if (mounted && _animationControllers.containsKey(i)) {
+            controller.repeat(reverse: true);
+          }
+        });
+      }
+    }
   }
 
   Future<void> _precargaImagen() async {
@@ -60,21 +111,19 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
     });
 
     try {
-      final String url = 'http://172.22.8.28:8000/obtener-lotes/${widget.planoData['id']}';
+      final String url = ApiConfig.obtenerLotesEndpoint(widget.planoData['id']);
 
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-          'Content-Type': 'application/json',
-        },
-      );
+        headers: ApiConfig.authHeaders(widget.token),
+      ).timeout(ApiConfig.requestTimeout);
 
       if (response.statusCode == 200) {
         setState(() {
           lotes = List<Map<String, dynamic>>.from(json.decode(response.body));
           isLoading = false;
         });
+        _initializeAnimations();
       } else {
         setState(() {
           error = 'Error al obtener los lotes: ${response.statusCode}';
@@ -155,13 +204,18 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
                   width: imageWidth,
                   height: imageHeight,
                   child: Stack(
-                    children: lotes.map((lote) => _buildLoteOverlay(
-                      lote,
-                      imageWidth,
-                      imageHeight,
-                      imageSize.width,
-                      imageSize.height,
-                    )).toList(),
+                    children: lotes.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final lote = entry.value;
+                      return _buildLoteOverlay(
+                        lote,
+                        index,
+                        imageWidth,
+                        imageHeight,
+                        imageSize.width,
+                        imageSize.height,
+                      );
+                    }).toList(),
                   ),
                 ),
             ],
@@ -173,6 +227,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
 
   Widget _buildLoteOverlay(
       Map<String, dynamic> lote,
+      int index,
       double containerWidth,
       double containerHeight,
       double originalWidth,
@@ -196,12 +251,129 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
       final double width = double.parse(coords[2]) * scaleX;
       final double height = double.parse(coords[3]) * scaleY;
 
-      //Determinar colores basados en el estado
+      // Determinar colores basados en el estado
       final bool isVendido = lote['estado']?.toLowerCase() == 'vendido';
-      final Color borderColor = isVendido ? Colors.red : Colors.green;
-      final Color fillColor = isVendido
-          ? Colors.red.withOpacity(0.3)
-          : Colors.green.withOpacity(0.3);
+
+      // Colores mejorados
+      Color borderColor;
+      Color fillColor;
+      Color shadowColor;
+
+      if (isVendido) {
+        borderColor = Colors.red.shade600;
+        fillColor = Colors.red.withOpacity(0.2);
+        shadowColor = Colors.red.withOpacity(0.3);
+      } else {
+        borderColor = Colors.green.shade600;
+        fillColor = Colors.green.withOpacity(0.15);
+        shadowColor = Colors.green.withOpacity(0.4);
+      }
+
+      Widget loteWidget = Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: borderColor,
+            width: 2.5,
+          ),
+          color: fillColor,
+          boxShadow: [
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+              spreadRadius: 0.5,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Indicador de esquina para lotes disponibles
+            if (!isVendido)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade400,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.green.withOpacity(0.6),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withOpacity(0.7),
+                      Colors.black.withOpacity(0.5),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  lote['nombre'] ?? '',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      letterSpacing: 0.5,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(1.0, 1.0),
+                          blurRadius: 2.0,
+                          color: Colors.black,
+                        )
+                      ]
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      // Aplicar animación solo a lotes disponibles
+      if (!isVendido && _pulseAnimations.containsKey(index)) {
+        loteWidget = AnimatedBuilder(
+          animation: _pulseAnimations[index]!,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _pulseAnimations[index]!.value,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withOpacity(0.3 * _pulseAnimations[index]!.value),
+                      blurRadius: 12 * _pulseAnimations[index]!.value,
+                      spreadRadius: 2 * _pulseAnimations[index]!.value,
+                    ),
+                  ],
+                ),
+                child: child,
+              ),
+            );
+          },
+          child: loteWidget,
+        );
+      }
 
       return Positioned(
         left: x,
@@ -211,43 +383,7 @@ class _ImagenCompletaScreenState extends State<ImagenCompletaScreen> {
         child: GestureDetector(
           onTap: () => _mostrarDetallesLote(context, lote),
           behavior: HitTestBehavior.translucent,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.blue.withOpacity(0.7),
-                width: 2,
-              ),
-              color: fillColor,
-            ),
-            child: Stack(
-              children: [
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      lote['nombre'] ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(1.0, 1.0),
-                            blurRadius: 3.0,
-                            color: Colors.black,
-                          )
-                        ]
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
+          child: loteWidget,
         ),
       );
     } catch (e) {

@@ -1,5 +1,8 @@
+from django.utils import timezone
+from datetime import datetime, timezone as tz
 import cv2, re
 import numpy as np
+import pytz
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -8,7 +11,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import make_password
 from .models import LogActividad, Usuario, Lote, Venta, Plano
 from .serializers import LogActividadSerializer, LoteSerializer, PlanoSerializer, UsuarioSerializer, VentaSerializer, CompradoresSerializer
@@ -465,3 +468,15 @@ def ver_log_actividad(request):
     log = LogActividad.objects.all()
     serializer = LogActividadSerializer(log, many=True)
     return Response(serializer.data)
+
+#ver hora
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Permitir acceso a cualquier usuario
+def hora_exacta(request):
+    hora_lima = timezone.localtime(timezone.now())  # Forzar conversión a Lima
+    return Response({
+        "Hora Django (Lima)": hora_lima.strftime("%Y-%m-%d %H:%M:%S"),
+        "Hora sistema": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Hora UTC": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "Zona horaria": str(timezone.get_current_timezone()),
+    })

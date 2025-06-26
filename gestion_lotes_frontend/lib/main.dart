@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gestion_lotes_frontend/components/decorative_background.dart';
+import 'package:gestion_lotes_frontend/core/utils/time_utils.dart';
 import 'screens/register_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() {
+  TimeUtils.initialize(); // Configura zonas horarias
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -29,14 +31,14 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.light,
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
-        fontFamily: 'Poppins', // Añadiendo una fuente moderna
+        fontFamily: 'Poppins',
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            minimumSize: const Size(250, 50), // Botones más grandes
+            minimumSize: const Size(250, 50),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15), // Bordes más redondeados
+              borderRadius: BorderRadius.circular(15),
             ),
-            elevation: 2, // Añadiendo sombra sutil
+            elevation: 2,
           ),
         ),
       ),
@@ -54,7 +56,6 @@ class MainScreen extends StatelessWidget {
       body: Stack(
         children: [
           DecorativeBackground(),
-          // Contenido principal
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -62,7 +63,7 @@ class MainScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo animado rectangular
+                    // Logo animado - Contenedor más grande con imagen que ocupa todo el espacio
                     TweenAnimationBuilder(
                       tween: Tween<double>(begin: 0, end: 1),
                       duration: const Duration(milliseconds: 600),
@@ -70,8 +71,8 @@ class MainScreen extends StatelessWidget {
                         return Transform.scale(
                           scale: value,
                           child: Container(
-                            width: 300,
-                            height: 120,
+                            width: 300, // Ancho aumentado
+                            height: 130, // Altura aumentada
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
@@ -83,17 +84,23 @@ class MainScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
+                            // Usamos ClipRRect para asegurar que la imagen respete los bordes redondeados
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
                               child: Image.asset(
-                                'assets/imagen/logoL2.png', // Ruta de tu imagen
-                                fit: BoxFit.contain,
-                                // En caso de error al cargar la imagen, mostrar un ícono por defecto
+                                'assets/imagen/logoL2.png',
+                                width: double.infinity,
+                                height: double.infinity,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
-                                    Icons.map,
-                                    size: 70,
-                                    color: Colors.blue.shade700,
+                                  return Container(
+                                    color: Colors.blue.shade100,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.map,
+                                        size: 70,
+                                        color: Colors.blue.shade700,
+                                      ),
+                                    ),
                                   );
                                 },
                               ),
@@ -137,106 +144,121 @@ class MainScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 60),
 
-                    // Botones con efectos hover
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
-                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                  return FadeTransition(opacity: animation, child: child);
-                                },
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.shade600,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                            elevation: 3,
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.login, size: 24),
-                              SizedBox(width: 12),
-                              Text(
-                                'Iniciar Sesión',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    // Botón de Iniciar Sesión
+                    _buildAnimatedButton(
+                      onPressed: () => _navigateTo(context, LoginScreen()),
+                      backgroundColor: Colors.blue.shade600,
+                      foregroundColor: Colors.white,
+                      icon: Icons.login,
+                      text: 'Iniciar Sesión',
                     ),
                     const SizedBox(height: 20),
 
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (context, animation, secondaryAnimation) => RegisterScreen(),
-                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                  return FadeTransition(opacity: animation, child: child);
-                                },
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.blue.shade600,
-                            side: BorderSide(color: Colors.blue.shade600, width: 2),
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                            elevation: 0,
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.person_add, size: 24),
-                              SizedBox(width: 12),
-                              Text(
-                                'Registrarse',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    // Botón de Registrarse
+                    _buildAnimatedButton(
+                      onPressed: () => _navigateTo(context, RegisterScreen()),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.blue.shade600,
+                      icon: Icons.person_add,
+                      text: 'Registrarse',
+                      hasBorder: true,
                     ),
                     const SizedBox(height: 40),
 
-                    // Texto de versión con diseño mejorado
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Versión 1.0.0',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+                    // Texto de versión
+                    _buildVersionText(),
                   ],
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Método para navegación con transición
+  void _navigateTo(BuildContext context, Widget screen) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => screen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return SlideTransition(position: offsetAnimation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
+  }
+
+  // Widget reutilizable para botones animados
+  Widget _buildAnimatedButton({
+    required VoidCallback onPressed,
+    required Color backgroundColor,
+    required Color foregroundColor,
+    required IconData icon,
+    required String text,
+    bool hasBorder = false,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            foregroundColor: foregroundColor,
+            side: hasBorder
+                ? BorderSide(color: Colors.blue.shade600, width: 2)
+                : null,
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 24),
+              const SizedBox(width: 12),
+              Text(
+                text,
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget reutilizable para el texto de versión
+  Widget _buildVersionText() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        'Versión 1.0.0',
+        style: TextStyle(
+          color: Colors.grey.shade600,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }

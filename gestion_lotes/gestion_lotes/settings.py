@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-)$@pp4s4^ns1=jotjlbzh6^xnjv=zr-2ugxr9+da@q92d)36ek
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.0.2.2', 'localhost', '127.0.0.1', '192.168.1.46', '192.168.1.103', '192.168.1.53', '172.22.3.18', '172.22.8.28']
+ALLOWED_HOSTS = ['10.0.2.2', 'localhost', '127.0.0.1', '192.168.1.46', 
+                 '192.168.1.103', '192.168.1.53', '172.22.3.18', '172.22.8.28',
+                 '192.168.129.173']
 
 
 # Application definition
@@ -80,8 +82,6 @@ ROOT_URLCONF = 'gestion_lotes.urls'
 # Configuraciones adicionales de seguridad para el admin
 SECURE_ADMIN_LOGIN = True
 
-TIME_ZONE = 'America/Lima'
-USE_TZ = True
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -115,6 +115,9 @@ DATABASES = {
         'PASSWORD': '',               # Contraseña MySQL (vacía por defecto en Laragon)
         'HOST': '127.0.0.1',          # Dirección local
         'PORT': '3306',               # Puerto MySQL
+        'OPTIONS': {
+            'init_command': "SET time_zone = 'America/Lima'",  # Configuración de la zona horaria
+        }
     }
 }
 
@@ -143,11 +146,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 DEFAULT_CHARSET = 'utf-8'
-
-LANGUAGE_CODE = 'es-es'
-TIME_ZONE = 'America/Lima'  # Para Perú
+TIME_ZONE = 'America/Lima'
 USE_I18N = True
 USE_TZ = True
+LANGUAGE_CODE = 'es-es'
+
 
 
 # Static files (CSS, JavaScript, Images)

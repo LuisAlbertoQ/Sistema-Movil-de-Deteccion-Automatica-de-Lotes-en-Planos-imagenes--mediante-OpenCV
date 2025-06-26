@@ -1,3 +1,5 @@
+import 'package:gestion_lotes_frontend/core/utils/time_utils.dart';
+
 class Plano {
   final String nombre;
   final String urlImagen;
@@ -66,5 +68,19 @@ class PlanoModel {
   // Getter para verificar si tiene usuario
   String get displaySubidoPor {
     return subidoPor ?? 'Desconocido';
+  }
+
+  DateTime? get fechaSubidaLocal {
+    if (fechaSubida == null) return null;
+    return TimeUtils.parseFromApi(fechaSubida!);
+  }
+
+  // Método para formatear la fecha ya convertida
+  String get fechaSubidaFormateada {
+    if (fechaSubida == null) return 'No disponible';
+    return TimeUtils.formatToLimaTime(
+        TimeUtils.parseFromApi(fechaSubida!),
+        format: 'dd/MM/yyyy HH:mm'
+    );
   }
 }

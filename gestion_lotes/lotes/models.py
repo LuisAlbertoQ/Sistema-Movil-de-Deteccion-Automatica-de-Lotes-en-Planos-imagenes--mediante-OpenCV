@@ -38,7 +38,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     nombre = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     rol = models.CharField(max_length=10, choices=ROLES, default='usuario')
-    fecha_registro = models.DateTimeField(auto_now_add=True)
+    fecha_registro = models.DateTimeField(default=timezone.now)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -65,7 +65,7 @@ class Plano(models.Model):
     nombre_plano = models.CharField(max_length=100)
     imagen = models.ImageField(upload_to='planos/')
     subido_por = models.ForeignKey('Usuario', on_delete=models.CASCADE)
-    fecha_subida = models.DateTimeField(auto_now_add=True)
+    fecha_subida = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.nombre_plano
@@ -97,8 +97,8 @@ class Lote(models.Model):
 class Venta(models.Model):
     id_lote = models.ForeignKey(Lote, on_delete=models.SET_NULL, null=True)
     id_comprador = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
-    precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
-    fecha_venta = models.DateTimeField(auto_now_add=True)
+    precio_venta = models.DecimalField(max_digits=10, decimal_places=3)
+    fecha_venta = models.DateTimeField(default=timezone.now)
     condiciones = models.TextField()
 
     def __str__(self):

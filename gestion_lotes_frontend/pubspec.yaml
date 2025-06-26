@@ -44,6 +44,7 @@ dependencies:
   photo_view: ^0.14.0
   intl_messages: ^2.3.4
   flutter_launcher_icons: ^0.13.1
+  timezone: ^0.9.1  # Para manejo de zonas horarias
 
 
 dev_dependencies:
