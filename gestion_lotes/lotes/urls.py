@@ -22,5 +22,5 @@ urlpatterns = [
     path('obtener-lotes/<int:plano_id>/', views.obtener_lotes_por_plano, name='obtener_lotes_por_plano'),
     path('obtener-perfil/', views.obtener_perfil_usuario, name='obtener_perfil_usuario'),
     path('compradores/', views.listar_compradores, name='listar_compradores'),
-    path('hora/', views.hora_exacta, name='hora_actual'),
+    #path('hora/', views.hora_exacta, name='hora_actual'),
 ]

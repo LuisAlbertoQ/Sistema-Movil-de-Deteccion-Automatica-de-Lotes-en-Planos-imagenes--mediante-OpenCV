@@ -45,6 +45,8 @@ dependencies:
   intl_messages: ^2.3.4
   flutter_launcher_icons: ^0.13.1
   timezone: ^0.9.1  # Para manejo de zonas horarias
+  camera: ^0.10.5+5
+  permission_handler: ^11.0.1
 
 
 dev_dependencies:

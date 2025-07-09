@@ -3,6 +3,7 @@ import 'package:gestion_lotes_frontend/config/api_config.dart';
 import 'package:gestion_lotes_frontend/screens/listado_planos_screen.dart';
 import 'package:gestion_lotes_frontend/screens/listar_ventas_screen.dart';
 import 'package:gestion_lotes_frontend/screens/log_actividad_screen.dart';
+import 'package:gestion_lotes_frontend/services/auth_service.dart'; // AGREGADO
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -95,6 +96,31 @@ class _CustomDrawerState extends State<CustomDrawer> with TickerProviderStateMix
       }
     } catch (e) {
       print('Error de conexión: $e');
+    }
+  }
+
+  // MÉTODO MEJORADO PARA CERRAR SESIÓN
+  Future<void> _performLogout() async {
+    try {
+      // Primero limpiar los datos del AuthService
+      await AuthService.logout();
+
+      // Luego navegar a MainScreen y limpiar todo el stack
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+              (route) => false,
+        );
+      }
+    } catch (e) {
+      print('Error durante el logout: $e');
+      // Aún así navegar para evitar que el usuario se quede bloqueado
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+              (route) => false,
+        );
+      }
     }
   }
 
@@ -406,7 +432,7 @@ class _CustomDrawerState extends State<CustomDrawer> with TickerProviderStateMix
                         TextButton(
                           onPressed: () => Navigator.pop(context),
                           style: TextButton.styleFrom(
-                            minimumSize: const Size(120, 48), // Mismo tamaño para ambos botones
+                            minimumSize: const Size(120, 48),
                             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -423,12 +449,12 @@ class _CustomDrawerState extends State<CustomDrawer> with TickerProviderStateMix
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            widget.onLogout();
+                          onPressed: () async {
+                            Navigator.pop(context); // Cerrar el diálogo
+                            await _performLogout(); // CAMBIO PRINCIPAL: usar el método mejorado
                           },
                           style: ElevatedButton.styleFrom(
-                            minimumSize: Size(130, 50), // Mismo tamaño para ambos botones
+                            minimumSize: Size(130, 50),
                             backgroundColor: Colors.red.shade600,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

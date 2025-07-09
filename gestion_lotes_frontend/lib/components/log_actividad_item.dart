@@ -88,45 +88,59 @@ class _LogActividadItemState extends State<LogActividadItem>
     );
   }
 
-  IconData _getActionIcon(String accion) {
-    final actionLower = accion.toLowerCase();
-    if (actionLower.contains('crear') || actionLower.contains('registr')) {
-      return Icons.add_circle_outline;
-    } else if (actionLower.contains('editar') || actionLower.contains('modific') || actionLower.contains('actualiz')) {
-      return Icons.edit_outlined;
-    } else if (actionLower.contains('eliminar') || actionLower.contains('borrar')) {
-      return Icons.delete_outline;
-    } else if (actionLower.contains('login') || actionLower.contains('inicio')) {
-      return Icons.login;
-    } else if (actionLower.contains('logout') || actionLower.contains('salir')) {
-      return Icons.logout;
-    } else if (actionLower.contains('ver') || actionLower.contains('consultar')) {
-      return Icons.visibility_outlined;
-    } else {
-      return Icons.history;
+  // Método mejorado que usa el campo tipoAccion del backend
+  IconData _getActionIcon(String tipoAccion) {
+    switch (tipoAccion.toLowerCase()) {
+      case 'crear':
+      case 'registro':
+        return Icons.add_circle_outline;
+      case 'editar':
+        return Icons.edit_outlined;
+      case 'eliminar':
+        return Icons.delete_outline;
+      case 'login':
+        return Icons.login;
+      case 'logout':
+        return Icons.logout;
+      case 'consultar':
+        return Icons.visibility_outlined;
+      case 'subir':
+        return Icons.upload_outlined;
+      case 'venta':
+        return Icons.monetization_on_outlined;
+      default:
+        return Icons.history;
     }
   }
 
-  Color _getActionColor(String accion) {
-    final actionLower = accion.toLowerCase();
-    if (actionLower.contains('crear') || actionLower.contains('registr')) {
-      return Colors.green;
-    } else if (actionLower.contains('editar') || actionLower.contains('modific') || actionLower.contains('actualiz')) {
-      return Colors.orange;
-    } else if (actionLower.contains('eliminar') || actionLower.contains('borrar')) {
-      return Colors.red;
-    } else if (actionLower.contains('login') || actionLower.contains('inicio')) {
-      return Colors.blue;
-    } else if (actionLower.contains('logout') || actionLower.contains('salir')) {
-      return Colors.grey;
-    } else {
-      return Colors.blue;
+  // Método mejorado que usa el campo tipoAccion del backend
+  Color _getActionColor(String tipoAccion) {
+    switch (tipoAccion.toLowerCase()) {
+      case 'crear':
+      case 'registro':
+        return Colors.green;
+      case 'editar':
+        return Colors.orange;
+      case 'eliminar':
+        return Colors.red;
+      case 'login':
+        return Colors.blue;
+      case 'logout':
+        return Colors.grey;
+      case 'consultar':
+        return Colors.purple;
+      case 'subir':
+        return Colors.teal;
+      case 'venta':
+        return Colors.amber;
+      default:
+        return Colors.blue;
     }
   }
 
   String _getTimeAgo(String fechaISO) {
     try {
-      final fecha = TimeUtils.parseFromApi(fechaISO); // Usa TimeUtils
+      final fecha = TimeUtils.parseFromApi(fechaISO);
       final now = TimeUtils.toLimaTime(DateTime.now());
       final difference = now.difference(fecha);
 
@@ -148,8 +162,9 @@ class _LogActividadItemState extends State<LogActividadItem>
 
   @override
   Widget build(BuildContext context) {
-    final actionIcon = _getActionIcon(widget.log.accion);
-    final actionColor = _getActionColor(widget.log.accion);
+    // Usar el campo tipoAccion del backend
+    final actionIcon = _getActionIcon(widget.log.tipoAccion);
+    final actionColor = _getActionColor(widget.log.tipoAccion);
 
     return GestureDetector(
       onTapDown: (_) => _animationController.forward(),
@@ -250,7 +265,7 @@ class _LogActividadItemState extends State<LogActividadItem>
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  widget.log.accion,
+                                  widget.log.tipoAccion.toUpperCase(),
                                   style: TextStyle(
                                     color: actionColor.withOpacity(0.7),
                                     fontSize: 12,
@@ -305,7 +320,7 @@ class _LogActividadItemState extends State<LogActividadItem>
                           const SizedBox(height: 8),
                           _buildInfoRow(
                             actionIcon,
-                            'Acción Realizada',
+                            'Descripción',
                             widget.log.accion,
                             iconColor: actionColor,
                           ),

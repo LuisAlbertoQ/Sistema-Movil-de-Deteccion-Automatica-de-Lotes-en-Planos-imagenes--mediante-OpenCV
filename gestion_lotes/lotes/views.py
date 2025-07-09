@@ -1,8 +1,7 @@
 from django.utils import timezone
-from datetime import datetime, timezone as tz
+from datetime import timezone as tz
 import cv2, re
 import numpy as np
-import pytz
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -21,7 +20,6 @@ from shapely.geometry import Polygon, MultiPolygon
 @api_view(['POST'])
 def registro(request):
     data = request.data
-    
     
     if 'username' not in data or 'password' not in data:
         return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -71,10 +69,11 @@ def registro(request):
         rol=data.get('rol', 'usuario')  # Por defecto, asignamos el rol de usuario
     )
     
-    # Log the activity
+    # Log mejorado con categoría
     LogActividad.objects.create(
         id_usuario=usuario,
-        accion='Usuario registrado',
+        accion=f'Nuevo usuario registrado: {usuario.username}',
+        tipo_accion='registro'
     )
     
     # Serialize
@@ -96,7 +95,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 @api_view(['POST'])
-def login(request):
+def login(request, usuario):
     username = request.data.get('username')
     password = request.data.get('password')
     
@@ -110,10 +109,11 @@ def login(request):
     if usuario is not None:
         refresh = RefreshToken.for_user(usuario)
         
-        # Log de actividad
+        # Log mejorado con categoría
         LogActividad.objects.create(
             id_usuario=usuario,
-            accion='Usuario inició sesión'
+            accion=f'{usuario.username} inició sesión',
+            tipo_accion='login'
         )
         
         return Response({
@@ -250,10 +250,11 @@ def subir_plano(request):
             # Guardar el plano con el usuario autenticado
             plano = serializer.save(subido_por=request.user)
             
-            # Registrar la actividad de subida de plano
+            # Log mejorado con categoría
             LogActividad.objects.create(
                 id_usuario=request.user,
-                accion=f'Plano {plano.id} subido'
+                accion=f'Plano "{plano.nombre_plano}" subido exitosamente',
+                tipo_accion='subir'
             )
             
             # Llamar a la función de detección de lotes y procesar los lotes detectados
@@ -310,11 +311,14 @@ def listar_lotes(request):
 def eliminar_lote(request, lote_id):
     try:
         lote = Lote.objects.get(id=lote_id)
+        nombre_lote = lote.nombre
         lote.delete()
         
+        # Log mejorado con categoría
         LogActividad.objects.create(
             id_usuario=request.user,
-            accion=f'Venta {lote_id} eliminado'    
+            accion=f'Lote "{nombre_lote}" eliminado',
+            tipo_accion='eliminar'
         )
                 
         return Response({'detail': 'Lote eliminado exitosamente'}, status=status.HTTP_204_NO_CONTENT)
@@ -333,9 +337,11 @@ def editar_lote(request, lote_id):
     if serializer.is_valid():
         serializer.save()
         
+        # Log mejorado con categoría
         LogActividad.objects.create(
             id_usuario=request.user,
-            accion=f'Lote {lote.id} editado'    
+            accion=f'Lote "{lote.nombre}" editado',
+            tipo_accion='editar'
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -370,9 +376,11 @@ def registrar_venta(request):
         lote.estado = 'vendido'
         lote.save()
         
+        # Log mejorado con categoría
         LogActividad.objects.create(
             id_usuario=request.user,
-            accion=f'Venta {venta.id} registrada, y lote {lote.id} marcado como vendido'    
+            accion=f'Venta registrada: Lote "{lote.nombre}" vendido a {comprador.nombre}',
+            tipo_accion='venta'
         )
 
         serializer = VentaSerializer(venta)
@@ -409,6 +417,7 @@ def eliminar_venta(request, venta_id):
     try:
         venta = Venta.objects.get(id=venta_id)
         lote = venta.id_lote
+        comprador_nombre = venta.id_comprador.nombre if venta.id_comprador else "Usuario eliminado"
         
         # Verificar que el lote existe antes de modificarlo
         if lote:
@@ -417,9 +426,11 @@ def eliminar_venta(request, venta_id):
         
         venta.delete()
         
+        # Log mejorado con categoría
         LogActividad.objects.create(
             id_usuario=request.user,
-            accion=f'Venta {venta_id} eliminada y lote {lote.id if lote else "N/A"} marcado como disponible'    
+            accion=f'Venta eliminada: Lote "{lote.nombre if lote else "N/A"}" de {comprador_nombre}',
+            tipo_accion='eliminar'
         )
         
         return Response({
@@ -449,7 +460,8 @@ def editar_venta(request, venta_id):
         
         LogActividad.objects.create(
             id_usuario=request.user,
-            accion=f'Venta {venta_id} editada'    
+            accion=f'Venta {venta_id} editada', 
+            tipo_accion='editar'
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -470,6 +482,7 @@ def ver_log_actividad(request):
     return Response(serializer.data)
 
 #ver hora
+'''
 @api_view(['GET'])
 @permission_classes([AllowAny])  # Permitir acceso a cualquier usuario
 def hora_exacta(request):
@@ -480,3 +493,4 @@ def hora_exacta(request):
         "Hora UTC": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         "Zona horaria": str(timezone.get_current_timezone()),
     })
+'''

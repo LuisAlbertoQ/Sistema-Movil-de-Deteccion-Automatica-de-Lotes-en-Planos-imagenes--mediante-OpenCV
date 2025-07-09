@@ -109,8 +109,22 @@ class Venta(models.Model):
         verbose_name_plural = "Ventas"
 
 class LogActividad(models.Model):
-    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    TIPOS_ACCION = [
+        ('crear', 'Crear'),
+        ('editar', 'Editar'),
+        ('eliminar', 'Eliminar'),
+        ('login', 'Inicio de Sesión'),
+        ('logout', 'Cierre de Sesión'),
+        ('registro', 'Registro'),
+        ('subir', 'Subir Archivo'),
+        ('venta', 'Venta'),
+        ('consultar', 'Consultar'),
+        ('otro', 'Otro'),
+    ]
+    
+    id_usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
     accion = models.CharField(max_length=255)
+    tipo_accion = models.CharField(max_length=20, choices=TIPOS_ACCION, default='otro')
     fecha = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

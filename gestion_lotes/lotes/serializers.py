@@ -35,6 +35,7 @@ class VentaSerializer(serializers.ModelSerializer):
         
 class LogActividadSerializer(serializers.ModelSerializer):
     id_usuario = serializers.CharField(source='id_usuario.username', read_only=True)
+    tipo_accion = serializers.CharField(read_only=True)
     class Meta:
         model = LogActividad
-        fields = ['id_usuario', 'accion', 'fecha']
+        fields = ['id_usuario', 'accion', 'tipo_accion', 'fecha']
