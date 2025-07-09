@@ -110,7 +110,7 @@ WSGI_APPLICATION = 'gestion_lotes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gestion_lotes',  # Nombre de la base de datos creada en Laragon
+        'NAME': 'gestion_lotes_pruebas',  # Nombre de la base de datos creada en Laragon
         'USER': 'root',               # Usuario MySQL (por defecto en Laragon)
         'PASSWORD': '',               # Contraseña MySQL (vacía por defecto en Laragon)
         'HOST': '127.0.0.1',          # Dirección local
